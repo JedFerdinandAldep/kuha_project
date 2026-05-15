@@ -1,13 +1,32 @@
-# KUHA - Farm-to-Route Platform
+# KUHA
+### Farm-to-Route Platform
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Flask-3.0.x-blue" alt="Flask">
-  <img src="https://img.shields.io/badge/SQLite-Database-green" alt="SQLite">
-  <img src="https://img.shields.io/badge/SocketIO-Realtime-orange" alt="SocketIO">
-  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
-</p>
 
-> Smart logistics platform connecting small-holder farmers with local drivers to reduce waste and maximize profit.
+> A smart logistics platform connecting small-holder farmers with local drivers to reduce food waste and maximize farmer profits.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Fare Calculation System](#fare-calculation-system)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Security](#security)
+- [API Endpoints](#api-endpoints)
+- [User Roles](#user-roles)
+- [Job Status Flow](#job-status-flow)
+- [Pages](#pages)
+- [Environment Variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
+- [Known Issues & Limitations](#known-issues--limitations)
+- [Future Enhancements](#future-enhancements)
+- [Contributing](#contributing)
+- [Contributors](#contributors)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -94,6 +113,29 @@ kuha_project/
 
 ---
 
+## Quick Start
+
+```bash
+# Clone and navigate to the project
+cd kuha_project
+
+# Create virtual environment (optional but recommended)
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python app.py
+
+# Open in browser
+# http://localhost:5000
+```
+
+---
+
 ## Installation
 
 ### Prerequisites
@@ -118,7 +160,11 @@ kuha_project/
 
 3. **Install dependencies:**
    ```bash
-   pip install flask flask-cors flask-socketio requests pyjwt
+   pip install flask flask-cors flask-socketio eventlet requests pyjwt
+   ```
+   Or use the requirements file:
+   ```bash
+   pip install -r requirements.txt
    ```
 
 4. **Run the application:**
@@ -133,14 +179,26 @@ kuha_project/
 
 ---
 
-## Default Admin Credentials
+## Security
+
+### Default Admin Credentials
 
 | Field | Value |
 |-------|-------|
 | Email | Check `config/security_config.py` |
 | Password | Check `config/security_config.py` |
 
-> ⚠️ **Important:** Change the default admin credentials in production!
+> ⚠️ **Important:** Always change the default admin credentials in production!
+
+### Production Deployment
+
+When deploying to production, consider the following:
+
+1. **Change default secrets** - Update JWT_SECRET and SECRET_KEY in `config/security_config.py`
+2. **Use environment variables** - Store sensitive credentials in `.env` file
+3. **Enable HTTPS** - Use a reverse proxy like Nginx with SSL certificates
+4. **Database backup** - Regularly backup your `kuha.db` file
+5. **Rate limiting** - Implement rate limiting for API endpoints to prevent abuse
 
 ---
 
@@ -242,6 +300,33 @@ ADMIN_PASSWORD=your-admin-password
 
 ---
 
+## Database
+
+The SQLite database (`kuha.db`) is automatically created when you first run the application. No manual setup is required.
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| **Module not found error** | Ensure all dependencies are installed: `pip install -r requirements.txt` |
+| **Port 5000 in use** | Change the port in `app.py` or kill the process using that port |
+| **Geocoding not working** | Check internet connection; Nominatim has rate limits |
+| **WebSocket connection failed** | Ensure `flask-socketio` and `eventlet` are installed |
+| **Database locked error** | Close any other applications accessing `kuha.db` |
+
+### Getting Help
+
+If you encounter other issues, please open an issue on GitHub with:
+- Error message/screenshot
+- Steps to reproduce
+- Your environment details
+
+---
+
 ## Known Issues & Limitations
 
 1. **Fare Discrepancy** - Previous versions may have mismatch between displayed and calculated fare (fixed in latest update)
@@ -261,12 +346,6 @@ ADMIN_PASSWORD=your-admin-password
 
 ---
 
-## License
-
-MIT License - See LICENSE file for details.
-
----
-
 ## Contributing
 
 1. Fork the repository
@@ -279,8 +358,8 @@ MIT License - See LICENSE file for details.
 
 ## Contributors
 
-- **Jed Ferdinand Aldep** — Database & Back-End
-- **Crizlhor Andreaz Fernando** — FrontEnd & Database
+- **Jed Ferdinand Aldep** — Database & Backend
+- **Crizlhor Andreaz Fernando** — Frontend & Database
 - **Romer Zion Alonday** — UI/UX Design & Frontend
 
 ---
@@ -288,10 +367,11 @@ MIT License - See LICENSE file for details.
 ## Acknowledgments
 
 - [OpenStreetMap](https://www.openstreetmap.org/) - Map data
-- [OSRM](http://project-osrm.org/) - Routing service
+- [OSRM](https://project-osrm.org/) - Routing service
 - [Nominatim](https://nominatim.openstreetmap.org/) - Geocoding service
 - [Leaflet.js](https://leafletjs.com/) - Interactive maps
 
 ---
 
-<p align="center">Made with ❤️ for Filipino Farmers</p>
+
+*Built for Filipino Farmers* 🇵🇭
