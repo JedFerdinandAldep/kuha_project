@@ -1,0 +1,3261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUHA Map - Live Route Tracking</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css" />
+    
+    <!-- Professional Map Styles -->
+    <link rel="stylesheet" href="/static/design/css/map-pro.css" />
+
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --primary-light: #4caf50;
+            --accent: #ff9800;
+            --accent-hover: #f57c00;
+            --accent-light: #ffe0b2;
+            --success: #388e3c;
+            --danger: #d32f2f;
+            --warning: #ffa000;
+            --info: #1976d2;
+            --purple: #7b1fa2;
+            --white: #ffffff;
+            --bg-light: #f5f5f5;
+            --bg-primary: #f5f5f5;
+            --bg-surface: #ffffff;
+            --bg-hover: #e8e8e8;
+            --text-main: #333333;
+            --text-muted: #757575;
+            --text-secondary: #666666;
+            --text-primary: #333333;
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-xl: 20px;
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .map-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--white);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            outline: none;
+        }
+
+        .logo:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        a:focus, button:focus {
+            outline: none;
+        }
+
+        *:focus {
+            outline: none !important;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        .btn-outline { border-color: var(--primary); color: var(--primary); background: transparent; }
+        .btn-outline:hover { background: var(--primary); color: var(--white); }
+        
+        .btn-accent { background: var(--accent); color: var(--white); }
+        .btn-accent:hover { background: var(--accent-hover); }
+
+        .btn-icon { padding: 0.6rem; border-radius: 50%; }
+
+/* ENHANCED SEARCH STYLES */
+        .search-wrapper {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+        }
+        
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--white);
+            padding: 0.4rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .search-input-wrap {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 0.3rem;
+        }
+        
+        .search-input-wrap .search-icon {
+            color: var(--text-muted);
+            padding-left: 0.8rem;
+        }
+        
+        .search-input-wrap input {
+            flex: 1;
+            border: none;
+            padding: 0.6rem 0.5rem;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            background: transparent;
+        }
+        
+        .search-input-wrap input:focus {
+            box-shadow: none;
+        }
+        
+        .search-btn, .location-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .search-btn:hover { background: var(--primary-dark); }
+        
+        .location-btn {
+            background: var(--accent);
+            padding: 0.6rem 0.8rem;
+        }
+        
+        .location-btn:hover { background: var(--accent-hover); }
+        
+        /* SEARCH DROPDOWN */
+        .search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            margin-top: 0.5rem;
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 1002;
+        }
+        
+        .search-dropdown.active {
+            display: block;
+        }
+        
+        .dropdown-section {
+            padding: 0.5rem 0;
+        }
+        
+        .dropdown-section:first-child {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .dropdown-header .clear-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-transform: none;
+        }
+        
+        .dropdown-list {
+            padding: 0.3rem;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background: var(--bg-light);
+        }
+        
+        .dropdown-item .item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-light);
+            color: var(--primary);
+        }
+        
+        .dropdown-item .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .dropdown-item .item-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .dropdown-item .item-address {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .dropdown-item .item-type {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 4px;
+        }
+        
+        /* LOADING IN DROPDOWN */
+        .dropdown-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        
+        /* MAP CONTAINER */
+        #map {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 70px);
+            z-index: 1;
+        }
+
+        .leaflet-container {
+            width: 100%;
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* SIDE PANEL */
+        .side-panel {
+            position: fixed;
+            top: 150px;
+            right: 20px;
+            width: 320px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: calc(100vh - 170px);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .side-panel.collapsed {
+            transform: translateX(350px);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            background: var(--bg-light);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .panel-header h3 {
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .panel-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .panel-content {
+            padding: 1rem 1.5rem;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 3px solid var(--primary);
+        }
+
+        .stat-box.accent { border-left-color: var(--accent); }
+        .stat-box.success { border-left-color: var(--success); }
+        .stat-box.info { border-left-color: var(--info); }
+
+        .stat-box .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-box .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* FILTERS */
+        .filters-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-section h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-light);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .filter-checkbox:hover {
+            background: #e0e0e0;
+        }
+
+        .filter-checkbox input {
+            cursor: pointer;
+        }
+
+        /* JOB LIST */
+        .job-list-section h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .job-item {
+            background: var(--white);
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .job-item:hover {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .job-item .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .job-item .job-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .job-item .job-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .job-item .job-status.pending { background: #FFF3E0; color: var(--accent); }
+        .job-item .job-status.accepted { background: #E8F5E9; color: var(--success); }
+
+        .job-item .job-route {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .job-item .job-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* LEGEND */
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--white);
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .legend h4 {
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+            color: var(--text-main);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* GEOLOCATION BUTTON */
+        .geo-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 360px;
+            width: 50px;
+            height: 50px;
+            background: var(--white);
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--primary);
+            transition: 0.3s;
+        }
+
+        .geo-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .geo-btn.active {
+            background: var(--accent);
+            color: var(--white);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(255, 160, 0, 0.4); }
+            50% { box-shadow: 0 4px 30px rgba(255, 160, 0, 0.8); }
+        }
+
+        /* TOAST CONTAINER */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 3000;
+        }
+
+        .toast {
+            background: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--primary);
+            min-width: 250px;
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.info { border-left-color: var(--info); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* LEAFLET CUSTOM STYLES */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: 280px !important;
+        }
+
+        .popup-content {
+            padding: 1rem;
+        }
+
+        .popup-content h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .popup-content p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .popup-content .popup-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .popup-content .popup-actions .btn {
+            flex: 1;
+            justify-content: center;
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+        }
+
+        /* CUSTOM MARKER ICONS */
+        .custom-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            font-size: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .marker-farmer { background: var(--success); }
+        .marker-driver { background: var(--info); }
+        .marker-pickup { background: var(--accent); }
+        .marker-delivery { background: var(--danger); }
+        .marker-user { background: var(--purple); }
+
+        /* Marker Pin Styles - Enhanced */
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .marker-pin i {
+            transform: rotate(45deg);
+            font-size: 14px;
+            color: white;
+        }
+        .marker-shadow {
+            width: 10px;
+            height: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+        }
+
+        /* ROUTE LINE STYLES */
+        .route-line {
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .route-line:hover {
+            opacity: 1 !important;
+            weight: 6 !important;
+        }
+
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* MARKER CLUSTER STYLES */
+        .marker-cluster {
+            background: rgba(26, 115, 232, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .marker-cluster small {
+            font-size: 12px;
+        }
+
+        .marker-cluster.small {
+            background: rgba(52, 168, 83, 0.6);
+            width: 40px;
+            height: 40px;
+        }
+
+        .marker-cluster.medium {
+            background: rgba(249, 171, 0, 0.6);
+            width: 50px;
+            height: 50px;
+        }
+
+        .marker-cluster.large {
+            background: rgba(234, 67, 53, 0.6);
+            width: 60px;
+            height: 60px;
+        }
+
+        /* PULSING MARKER */
+        .pulsing-marker {
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* SUCCESS BUTTON */
+        .btn-success {
+            background: var(--success) !important;
+            color: white !important;
+        }
+
+        .btn-success:hover {
+            background: #2e7d32 !important;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .map-header {
+                padding: 0 1rem;
+                height: 60px;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .header-controls .btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .search-container {
+                top: 70px;
+                width: 95%;
+            }
+
+            .side-panel {
+                width: 100%;
+                right: 0;
+                top: auto;
+                bottom: 0;
+                max-height: 50vh;
+                border-radius: 20px 20px 0 0;
+            }
+
+            .side-panel.collapsed {
+                transform: translateY(100%);
+            }
+
+            .geo-btn {
+                right: 20px;
+                bottom: 80px;
+            }
+
+            .legend {
+                bottom: 10px;
+                left: 10px;
+                padding: 0.8rem;
+            }
+
+            .legend-item {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+        <!-- HEADER -->
+        <header class="map-header">
+            <a href="/" class="logo" onclick="return handleBackClick(event, '/')">
+                <i class="fas fa-leaf"></i> KUHA Map
+            </a>
+            <div class="header-controls">
+                <button onclick="refreshMap()" class="btn btn-outline btn-icon" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button onclick="toggleSidePanel()" class="btn btn-outline btn-icon" title="Toggle Panel">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button onclick="handleBackClick(event, '/')" class="btn btn-primary" id="backBtn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </header>
+
+    <!-- ENHANCED SEARCH BAR -->
+    <div class="search-wrapper">
+        <div class="search-container">
+            <div class="search-input-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search location (e.g., Iloilo City Market, Robinsons Mall)..." 
+                    autocomplete="off" 
+                    oninput="handleSearchInput(this.value)"
+                    onkeypress="if(event.key==='Enter') searchLocation()"
+                    onfocus="showSearchDropdown()"
+                    onblur="hideSearchDropdown()">
+                <button onclick="searchLocation()" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button onclick="getCurrentLocation()" class="location-btn" title="Get My Location">
+                    <i class="fas fa-crosshairs"></i>
+                </button>
+            </div>
+            <!-- Search Dropdown -->
+            <div class="search-dropdown" id="searchDropdown">
+                <!-- Recent Searches -->
+                <div class="dropdown-section" id="recentSearches">
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-history"></i> Recent</span>
+                        <button onclick="clearRecentSearches()" class="clear-btn">Clear</button>
+                    </div>
+                    <div class="dropdown-list" id="recentList"></div>
+                </div>
+                <!-- Search Results -->
+                <div class="dropdown-section" id="searchResults" style="display:none;">
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-list"></i> Results</span>
+                    </div>
+                    <div class="dropdown-list" id="resultsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <h3><i class="fas fa-chart-line"></i> Map Dashboard</h3>
+            <button onclick="toggleSidePanel()" class="panel-toggle">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+</div>
+        <div class="panel-content">
+            
+            <!-- QUICK ACTIONS -->
+            <div class="quick-actions">
+                <button onclick="loadAllData()" class="action-btn" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button onclick="toggleHeatmap()" class="action-btn" title="Heatmap">
+                    <i class="fas fa-fire"></i>
+                </button>
+                <button onclick="toggleClustering()" class="action-btn" title="Cluster">
+                    <i class="fas fa-object-group"></i>
+                </button>
+                <button onclick="fitAllMarkers()" class="action-btn" title="Fit All">
+                    <i class="fas fa-compress-arrows-alt"></i>
+                </button>
+                <button onclick="exportMapData()" class="action-btn" title="Export">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+
+            <!-- ENHANCED STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total"><i class="fas fa-box-open"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statTotalJobs">0</span>
+                        <span class="stat-label">Total Jobs</span>
+                        <span class="stat-trend positive" id="trendTotalJobs">+0%</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statPendingJobs">0</span>
+                        <span class="stat-label">Pending</span>
+                        <span class="stat-trend negative" id="trendPendingJobs">-0%</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon active"><i class="fas fa-truck-loading"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statActiveJobs">0</span>
+                        <span class="stat-label">Active</span>
+                        <span class="stat-trend neutral" id="trendActiveJobs">0%</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon distance"><i class="fas fa-road"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statTotalDistance">0</span>
+                        <span class="stat-label">km Total</span>
+                        <span class="stat-trend positive" id="trendDistance">+0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPLETION RATE -->
+            <div class="completion-rate">
+                <div class="completion-header">
+                    <span><i class="fas fa-check-circle"></i> Completion Rate</span>
+                    <span class="completion-value" id="completionRate">0%</span>
+                </div>
+                <div class="completion-bar">
+                    <div class="completion-fill" id="completionFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- JOB SEARCH -->
+            <div class="job-search">
+                <div class="search-input-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="jobSearchInput" placeholder="Search jobs..." 
+                        oninput="filterJobsList(this.value)">
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="filters-section">
+                <h4><i class="fas fa-filter"></i> Filters</h4>
+                <div class="filter-group">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterJobs" checked onchange="toggleMarkers()"> Jobs
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterRoutes" checked onchange="toggleMarkers()"> Routes
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterFarmers" checked onchange="toggleMarkers()"> Farmers
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterDrivers" checked onchange="toggleMarkers()"> Drivers
+                    </label>
+                </div>
+                <div class="filter-group" style="margin-top: 0.5rem;">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterPending" checked onchange="toggleMarkers()"> Pending
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterAccepted" checked onchange="toggleMarkers()"> Accepted
+                    </label>
+                </div>
+                <div style="margin-top: 0.8rem; display: flex; gap: 0.5rem;">
+                    <button onclick="fitAllMarkers()" class="btn btn-outline btn-sm" style="flex:1;">
+                        <i class="fas fa-compress-arrows-alt"></i> Fit All
+                    </button>
+                    <button onclick="resetFilters()" class="btn btn-outline btn-sm">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- MINI ANALYTICS -->
+            <div class="mini-analytics">
+                <div class="analytics-section">
+                    <h5><i class="fas fa-seedling"></i> Crop Distribution</h5>
+                    <div class="mini-chart" id="cropChart">
+                        <p style="color:var(--text-muted); font-size:0.8rem; text-align:center;">Loading...</p>
+                    </div>
+                </div>
+                <div class="analytics-section">
+                    <h5><i class="fas fa-map-marker-alt"></i> Top Destinations</h5>
+                    <div class="top-destinations" id="topDestinations">
+                        <p style="color:var(--text-muted); font-size:0.8rem; text-align:center;">Loading...</p>
+                    </div>
+                </div>
+                <div class="analytics-section">
+                    <h5><i class="fas fa-chart-line"></i> Weekly Trends</h5>
+                    <div class="trends-chart" id="trendsChart">
+                        <p style="color:var(--text-muted); font-size:0.8rem; text-align:center;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIVER STATUS -->
+            <div class="driver-status-section">
+                <h5><i class="fas fa-users"></i> Driver Status</h5>
+                <div class="driver-stats">
+                    <div class="driver-stat online">
+                        <span class="driver-count" id="onlineDrivers">0</span>
+                        <span class="driver-label">Online</span>
+                    </div>
+                    <div class="driver-stat busy">
+                        <span class="driver-count" id="busyDrivers">0</span>
+                        <span class="driver-label">On Job</span>
+                    </div>
+                    <div class="driver-stat offline">
+                        <span class="driver-count" id="offlineDrivers">0</span>
+                        <span class="driver-label">Offline</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECENT ACTIVITY -->
+            <div class="activity-feed">
+                <h5><i class="fas fa-history"></i> Recent Activity</h5>
+                <div class="activity-list" id="activityList">
+                    <p style="color:var(--text-muted); font-size:0.8rem; text-align:center;">Loading...</p>
+                </div>
+            </div>
+
+            <!-- JOB LIST -->
+            <div class="job-list-section">
+                <div class="job-list-header">
+                    <h4><i class="fas fa-list"></i> Active Jobs</h4>
+                    <span class="job-count" id="jobCount">0</span>
+                </div>
+                <div class="job-filters">
+                    <button class="job-filter-btn active" onclick="setJobFilter('all', this)">All</button>
+                    <button class="job-filter-btn" onclick="setJobFilter('Pending', this)">Pending</button>
+                    <button class="job-filter-btn" onclick="setJobFilter('Accepted', this)">Active</button>
+                </div>
+                <div id="jobListContainer">
+                    <p style="text-align:center; color:var(--text-muted); padding:1rem;">Loading jobs...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GEOLOCATION BUTTON -->
+    <button onclick="toggleGeolocation()" class="geo-btn" id="geoBtn" title="Find My Location">
+        <i class="fas fa-location-arrow"></i>
+    </button>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <h4><i class="fas fa-map-marker-alt"></i> Legend</h4>
+        <div class="legend-item">
+            <div class="legend-icon marker-farmer"><i class="fas fa-user"></i></div>
+            <span>Farmer</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon marker-driver"><i class="fas fa-truck"></i></div>
+            <span>Driver</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon marker-pickup"><i class="fas fa-box"></i></div>
+            <span>Pickup Point</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon marker-delivery"><i class="fas fa-flag-checkered"></i></div>
+            <span>Delivery Point</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon marker-user"><i class="fas fa-star"></i></div>
+            <span>My Location</span>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading map data...</p>
+    </div>
+
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Global error handler - logs to console instead of alert -->
+    <script>
+    window.onerror = function(msg, url, line, col, error) {
+        console.error('ERROR:', msg, 'Line:', line);
+        return false;
+    };
+    </script>
+
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+
+    <!-- Shared Utilities -->
+    <script src="/static/design/js/utils.js"></script>
+    <!-- Professional Map Features -->
+    <script src="/static/design/js/map-pro.js"></script>
+    </script>
+    
+<!-- REMOVED DUPLICATE DECLARATIONS -->
+    <script>
+    // === KUHA UTILITIES - use window.KUHA (already loaded from utils.js) ===
+    // Use different name to avoid conflict with utils.js API_BASE
+    const myAPI = '';  
+    const MAX_RETRIES = 2;
+    const RETRY_DELAY = 1000;
+
+    // === HELPER FUNCTIONS ===
+    async function apiCall(endpoint, method = 'GET', data = null, retries = 0) {
+        try {
+            const token = window.KUHA?.getToken?.() || null;
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+            if (data) options.body = JSON.stringify(data);
+            
+            const response = await fetch(`${myAPI}${endpoint}`, options);
+            
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: 'Request failed' }));
+                throw new Error(error.error || `HTTP ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            if (error.message.includes('Failed to fetch')) {
+                throw new Error('Server not responding. Please ensure the backend is running.');
+            }
+            
+            if (retries < MAX_RETRIES) {
+                console.log(`Retrying ${endpoint} (${retries + 1}/${MAX_RETRIES})...`);
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retries + 1)));
+                return apiCall(endpoint, method, data, retries + 1);
+            }
+            
+            throw error;
+        }
+    }
+
+    async function checkServerHealth() {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(`${myAPI}/api/jobs`, {
+                method: 'GET',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            return response.ok;
+        } catch {
+            return false;
+        }
+    }
+
+    // === DATA STORAGE HELPERS ===
+    const JOBS_KEY = 'kuha_jobs_v4';
+    const USERS_KEY = 'kuha_users_v4';
+
+    function saveToCache(key, data) {
+        if (key === 'kuha_jobs_v4' || key === JOBS_KEY) {
+            window.KUHA.saveJobs(data);
+        } else if (key === 'kuha_users_v4' || key === USERS_KEY) {
+            window.KUHA.saveUsers(data);
+        } else {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+    }
+
+// === PROFESSIONAL SERVICES ===
+let routingService = null;
+let searchService = null;
+let heatmapManager = null;
+let markerClusterGroup = null;
+
+// ============ REAL-TIME TRACKING ============
+let socket = null;
+let driverMarkers = {};
+
+function initSocketIO() {
+    socket = io();
+    
+    socket.on('connect', function() {
+        console.log('Socket.IO connected');
+        socket.emit('join_map');
+        showToast('Real-time tracking connected', 'success');
+    });
+    
+    socket.on('disconnect', function() {
+        console.log('Socket.IO disconnected');
+    });
+    
+    socket.on('driver_position', function(data) {
+        updateDriverMarker(data);
+    });
+    
+    socket.on('new_job', function(data) {
+        console.log('New job received:', data.job);
+        showToast('New job posted: ' + data.job.crop, 'info');
+        showBrowserNotification('New Job Available', data.job.crop + ' - ' + data.job.weight + 'kg');
+        loadAllData();
+    });
+    
+    socket.on('job_accepted', function(data) {
+        console.log('Job accepted:', data.job);
+        showToast('Job accepted by ' + data.job.driver_name, 'success');
+        showBrowserNotification('Job Accepted', data.job.driver_name + ' accepted ' + data.job.crop);
+        loadAllData();
+    });
+    
+    socket.on('joined_map', function(data) {
+        console.log('Joined map room');
+    });
+}
+
+function updateDriverMarker(data) {
+    const driverId = data.driver_id;
+    const latLng = [data.lat, data.lng];
+    
+    if (driverMarkers[driverId]) {
+        driverMarkers[driverId].setLatLng(latLng);
+    } else {
+        const marker = L.marker(latLng, {
+            icon: L.divIcon({
+                className: 'driver-marker live',
+                html: '<div class="driver-icon pulse"><i class="fas fa-truck"></i></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map);
+        driverMarkers[driverId] = marker;
+    }
+}
+
+function sendDriverLocation(lat, lng, driverId, jobId) {
+    if (socket && socket.connected) {
+        socket.emit('driver_location', {
+            driver_id: driverId,
+            lat: lat,
+            lng: lng,
+            job_id: jobId
+        });
+    }
+}
+
+function initProfessionalServices() {
+    console.log('[DEBUG] Initializing professional services...');
+    
+    routingService = new RoutingService();
+    searchService = new SearchService();
+    
+    // Verify MarkerFactory exists before creating cluster
+    if (typeof MarkerFactory === 'undefined') {
+        console.error('[DEBUG] MarkerFactory is undefined! Creating cluster without icon function');
+        markerClusterGroup = L.markerClusterGroup();
+    } else {
+        console.log('[DEBUG] MarkerFactory available, creating cluster');
+        markerClusterGroup = L.markerClusterGroup({
+            iconCreateFunction: function(cluster) {
+                return MarkerFactory.createClusterIcon(cluster);
+            }
+        });
+    }
+    
+    console.log('[DEBUG] Professional services initialized');
+}
+
+// === MAP INITIALIZATION ===
+let map;
+let markers = [];
+let routes = [];
+let userMarker = null;
+let watchId = null;
+let isTracking = false;
+
+// Default center: Iloilo City, Philippines
+const DEFAULT_CENTER = [10.7202, 122.5621];
+const DEFAULT_ZOOM = 12;
+
+function clearMapMarkers() {
+    markers.forEach(m => {
+        try { map.removeLayer(m); } catch(e) {}
+    });
+    markers = [];
+    
+    routes.forEach(r => {
+        try { map.removeLayer(r); } catch(e) {}
+    });
+    routes = [];
+    
+    if (markerClusterGroup) {
+        markerClusterGroup.clearLayers();
+    }
+}
+
+function initMap() {
+    try {
+        if (typeof L === 'undefined') {
+            throw new Error('Leaflet library NOT loaded');
+        }
+        
+        map = L.map('map', {
+            center: DEFAULT_CENTER,
+            zoom: DEFAULT_ZOOM,
+            zoomControl: false,
+            worldCopyJump: true
+        });
+
+        var tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        
+        const lightLayer = L.tileLayer(tileUrl, {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19,
+            subdomains: 'abc'
+        });
+        
+        lightLayer.addTo(map);
+        
+        // Also try CartoDB as backup
+        setTimeout(function() {
+            if (document.querySelectorAll('.leaflet-tile').length === 0) {
+                var cartoUrl = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+                var cartoLayer = L.tileLayer(cartoUrl, {
+                    attribution: '© CartoDB',
+                    maxZoom: 20
+                }).addTo(map);
+            }
+        }, 5000);
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        L.control.layers({ "Light": lightLayer }, null, { position: 'topright' }).addTo(map);
+
+        initProfessionalServices();
+        
+        if (markerClusterGroup) {
+            map.addLayer(markerClusterGroup);
+        }
+
+        setTimeout(function() {
+            map.invalidateSize();
+            map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+        }, 500);
+
+        loadAllData();
+
+        showToast('Map loaded successfully!', 'success');
+    } catch (error) {
+        console.error('Map init error:', error);
+    }
+}
+
+// === LOAD DATA ===
+async function loadAllData() {
+    console.log('[DEBUG] loadAllData started');
+    showLoading(true);
+    
+    try {
+        // Try to fetch directly from API
+        console.log('[DEBUG] Fetching from API...');
+        const [jobs, users] = await Promise.all([
+            fetch('/api/jobs').then(r => r.ok ? r.json() : Promise.reject('API error')),
+            fetch('/api/users').then(r => r.ok ? r.json() : Promise.reject('API error'))
+        ]);
+        
+        console.log('[DEBUG] API Response - Jobs:', jobs?.length || 0, 'Users:', users?.length || 0);
+        
+        // Normalize job coordinates
+        const normalizedJobs = jobs.map(job => ({
+            ...job,
+            deliveryLat: job.deliveryLat || job.delivery_lat,
+            deliveryLng: job.deliveryLng || job.delivery_lng
+        }));
+        
+        // Save to localStorage
+        window.KUHA.saveJobs(normalizedJobs);
+        window.KUHA.saveUsers(users);
+        
+        // Sync with other tabs
+        window.KUHA.notifyDataChanged('jobs');
+        
+        // Load on map
+        clearMapMarkers();
+        loadJobsOnMap();
+        loadUsersOnMap();
+        updateStats();
+        renderJobList();
+        
+        // Force map to recalculate size after markers added
+        setTimeout(() => {
+            if (map) {
+                map.invalidateSize();
+                console.log('[DEBUG] Map invalidated and refreshed');
+                // Fit bounds to show all markers if any exist
+                if (markers.length > 0) {
+                    fitAllMarkers();
+                }
+            }
+        }, 300);
+        
+        showToast('Map data loaded successfully', 'success');
+    } catch (error) {
+        console.error('[DEBUG] Load error:', error);
+        
+        // Fallback to cached data
+        console.log('[DEBUG] API failed, checking cache...');
+        const cachedJobs = window.KUHA.getJobs();
+        const cachedUsers = window.KUHA.getUsers();
+        
+        console.log('[DEBUG] Cached - Jobs:', cachedJobs?.length || 0, 'Users:', cachedUsers?.length || 0);
+        
+        if (cachedJobs.length > 0 || cachedUsers.length > 0) {
+            showToast('Server unavailable - using cached data', 'warning');
+            clearMapMarkers();
+            loadFromCache();
+        } else {
+            console.log('[DEBUG] No data available anywhere');
+            showToast('No data available. Please post jobs first.', 'error');
+            document.getElementById('jobListContainer').innerHTML = 
+                '<p style="text-align:center; color:var(--danger); padding:1rem;">No jobs found. Please post jobs from the farmer dashboard.</p>';
+        }
+    } finally {
+        showLoading(false);
+    }
+}
+
+function loadFromCache() {
+    console.log('[DEBUG] loadFromCache called');
+    const jobs = window.KUHA.getJobs();
+    const users = window.KUHA.getUsers();
+    loadJobsOnMap();
+    loadUsersOnMap();
+    updateStats();
+    renderJobList();
+    
+    // Force map to recalculate size after markers added
+    setTimeout(() => {
+        if (map) {
+            map.invalidateSize();
+            console.log('[DEBUG] Map invalidated after cache load');
+            if (markers.length > 0) {
+                fitAllMarkers();
+            }
+        }
+    }, 300);
+}
+
+function loadJobsOnMap() {
+    console.log('[DEBUG] loadJobsOnMap called');
+    
+    const jobs = window.KUHA.getJobs();
+    console.log('[DEBUG] Jobs from storage:', jobs?.length || 0);
+    
+    if (!jobs || jobs.length === 0) {
+        console.log('[DEBUG] No jobs to display on map');
+        return;
+    }
+    
+    // Verify map and markerClusterGroup are ready
+    if (!map) {
+        console.error('[DEBUG] Map not initialized');
+        return;
+    }
+    if (!markerClusterGroup) {
+        console.error('[DEBUG] markerClusterGroup not initialized');
+        return;
+    }
+    
+    let jobsLoaded = 0;
+    
+    jobs.forEach(job => {
+        // Normalize property names (handle both delivery_lat and deliveryLat)
+        const pickupLat = job.lat;
+        const pickupLng = job.lng;
+        const deliveryLat = job.deliveryLat || job.delivery_lat;
+        const deliveryLng = job.deliveryLng || job.delivery_lng;
+        
+        if (pickupLat && pickupLng && deliveryLat && deliveryLng) {
+            console.log('[DEBUG] Loading job:', job.id, job.location, '->', job.destination);
+            createJobMarkers(job);
+            try {
+                const filterRoutes = document.getElementById('filterRoutes');
+                if (filterRoutes && filterRoutes.checked) {
+                    createJobRoute(job).catch(err => console.error('[DEBUG] Route load error:', err));
+                }
+            } catch(e) {
+                console.warn('[DEBUG] Route filter check skipped:', e.message);
+            }
+            jobsLoaded++;
+        } else if (job.location && job.destination) {
+            console.log('[DEBUG] Geocoding job:', job.id, job.location);
+            geocodeAndCreateJob(job);
+        }
+    });
+    
+    console.log('[DEBUG] Loaded', jobsLoaded, 'jobs on map');
+}
+
+function loadUsersOnMap() {
+    const users = window.KUHA.getUsers();
+    
+    users.forEach(user => {
+        if (user.lat && user.lng) {
+            createUserMarker(user);
+        } else {
+            geocodeAndCreateUser(user);
+        }
+    });
+}
+
+async function geocodeAndCreateUser(user) {
+    if (!map) return;
+    
+    const query = user.phone ? `${user.phone}, Philippines` : `${user.email.split('@')[0]}, Philippines`;
+    
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+            { headers: { 'User-Agent': 'KUHA/1.0' } }
+        );
+        const results = await response.json();
+        
+        if (results.length > 0) {
+            user.lat = parseFloat(results[0].lat);
+            user.lng = parseFloat(results[0].lon);
+            createUserMarker(user);
+        }
+    } catch (error) {
+        console.error('User geocode error:', error);
+    }
+}
+
+// === JOB MARKERS & ROUTES ===
+function createJobMarkers(job) {
+    // Defensive check - verify map is ready
+    if (!map) {
+        console.error('[DEBUG] Map not initialized');
+        return;
+    }
+    if (!markerClusterGroup) {
+        console.error('[DEBUG] markerClusterGroup not ready');
+        // Try to create it if missing
+        try {
+            markerClusterGroup = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    return typeof MarkerFactory !== 'undefined' 
+                        ? MarkerFactory.createClusterIcon(cluster)
+                        : L.divIcon({
+                            html: '<div>' + cluster.getChildCount() + '</div>',
+                            className: 'marker-cluster',
+                            iconSize: { x: 40, y: 40 }
+                        });
+                }
+            });
+            map.addLayer(markerClusterGroup);
+        } catch(e) {
+            console.error('[DEBUG] Could not create cluster group:', e);
+            return;
+        }
+    }
+    
+    const showJobs = document.getElementById('filterJobs')?.checked ?? true;
+    const showPending = document.getElementById('filterPending')?.checked ?? true;
+    const showAccepted = document.getElementById('filterAccepted')?.checked ?? true;
+
+    if (!showJobs) return;
+    if (job.status === 'Pending' && !showPending) return;
+    if (job.status === 'Accepted' && !showAccepted) return;
+
+    // Ensure MarkerFactory is available
+    if (typeof MarkerFactory === 'undefined') {
+        console.warn('[DEBUG] MarkerFactory undefined, using fallback');
+        window.MarkerFactory = {
+            createCustomIcon: function(type) {
+                const colors = { farmer: '#34a853', driver: '#1a73e8', pickup: '#f9ab00', delivery: '#ea4335', user: '#7b1fa2' };
+                return L.divIcon({
+                    className: 'custom-marker marker-' + type,
+                    html: '<div class="marker-pin" style="background:' + (colors[type] || colors.pickup) + '"></div>',
+                    iconSize: [30, 40],
+                    iconAnchor: [15, 40]
+                });
+            }
+        };
+    }
+    
+    // Use professional marker factory
+    const pickupIcon = MarkerFactory.createCustomIcon('pickup');
+    const deliveryIcon = MarkerFactory.createCustomIcon('delivery');
+
+    // Normalize delivery coordinates
+    const deliveryLat = job.deliveryLat || job.delivery_lat;
+    const deliveryLng = job.deliveryLng || job.delivery_lng;
+    
+    const pickupMarker = L.marker([job.lat, job.lng], { icon: pickupIcon })
+        .bindPopup(createPickupPopup(job));
+    
+    const deliveryMarker = L.marker([deliveryLat, deliveryLng], { icon: deliveryIcon })
+        .bindPopup(createDeliveryPopup(job));
+    
+    // Add to cluster group instead of directly to map
+    markerClusterGroup.addLayer(pickupMarker);
+    markerClusterGroup.addLayer(deliveryMarker);
+    
+    markers.push(pickupMarker);
+    markers.push(deliveryMarker);
+    
+    console.log('[DEBUG] Created markers for job:', job.id);
+}
+
+// === ROAD ROUTE FUNCTIONS ===
+const routeCache = new Map();
+const ROUTE_COLORS = {
+    'Pending': '#FFA000',
+    'Accepted': '#388E3C'
+};
+
+async function createJobRoute(job) {
+    const showPending = document.getElementById('filterPending').checked;
+    const showAccepted = document.getElementById('filterAccepted').checked;
+
+    if (job.status === 'Pending' && !showPending) return;
+    if (job.status === 'Accepted' && !showAccepted) return;
+
+    if (!job.lat || !job.lng || !job.deliveryLat || !job.deliveryLng) {
+        const straightRoute = createStraightRoute(job);
+        if (straightRoute) routes.push(straightRoute);
+        return;
+    }
+
+    const routeKey = `${job.lat},${job.lng}-${job.deliveryLat},${job.deliveryLng}`;
+
+    try {
+        if (routeCache.has(routeKey)) {
+            const cached = routeCache.get(routeKey);
+            addRouteToMap(cached.route, cached.info, job);
+            return;
+        }
+
+        const routeData = await fetchRoadRoute(job.lat, job.lng, job.deliveryLat, job.deliveryLng);
+        
+        if (routeData && routeData.routes && routeData.routes.length > 0) {
+            const route = routeData.routes[0];
+            const info = {
+                distance: route.distance,
+                duration: route.duration,
+                geometry: route.geometry
+            };
+            routeCache.set(routeKey, { route, info });
+            addRouteToMap(route, info, job);
+        } else {
+            const straightRoute = createStraightRoute(job);
+            if (straightRoute) routes.push(straightRoute);
+        }
+    } catch (error) {
+        console.error('Route error:', error);
+        const straightRoute = createStraightRoute(job);
+        if (straightRoute) routes.push(straightRoute);
+    }
+}
+
+async function fetchRoadRoute(startLat, startLng, endLat, endLng) {
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&steps=true`;
+    
+    const response = await fetch(osrmUrl);
+    if (!response.ok) throw new Error('Route request failed');
+    
+    const data = await response.json();
+    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+        throw new Error('No route found');
+    }
+    
+    return data;
+}
+
+function addRouteToMap(route, info, job) {
+    const routeColor = ROUTE_COLORS[job.status] || '#1a73e8';
+    const isPending = job.status === 'Pending';
+
+    const routeLine = L.geoJSON(route.geometry, {
+        style: {
+            color: routeColor,
+            weight: isPending ? 3 : 5,
+            opacity: 0.9,
+            dashArray: isPending ? '10, 10' : null,
+            lineCap: 'round',
+            lineJoin: 'round'
+        },
+        className: 'route-line'
+    }).addTo(map);
+
+    const distanceKm = (info.distance / 1000).toFixed(1);
+    const durationMins = Math.round(info.duration / 60);
+    const durationText = durationMins >= 60 
+        ? `${Math.floor(durationMins / 60)}h ${durationMins % 60}m` 
+        : `${durationMins} min`;
+
+    routeLine.bindPopup(`
+        <div style="padding:0.5rem; min-width:200px;">
+            <h4 style="margin:0 0 0.5rem 0; color:#2e7d32;">
+                <i class="fas fa-route"></i> ${job.crop}
+            </h4>
+            <p style="margin:0.3rem 0;">
+                <i class="fas fa-map-marker-alt" style="color:#FFA000;"></i> 
+                <strong>From:</strong> ${job.location}
+            </p>
+            <p style="margin:0.3rem 0;">
+                <i class="fas fa-flag-checkered" style="color:#388E3C;"></i> 
+                <strong>To:</strong> ${job.destination}
+            </p>
+            <hr style="margin:0.5rem 0; border:0; border-top:1px solid #eee;">
+            <p style="margin:0.3rem 0; font-size:1.1rem;">
+                <i class="fas fa-road"></i> 
+                <strong>${distanceKm} km</strong>
+            </p>
+            <p style="margin:0.3rem 0; font-size:1.1rem;">
+                <i class="fas fa-clock"></i> 
+                <strong>${durationText}</strong>
+            </p>
+            <div style="margin-top:0.8rem; display:flex; gap:0.5rem;">
+                <button onclick="navigateTo(${job.deliveryLat}, ${job.deliveryLng})" class="btn btn-primary btn-sm" style="flex:1;">
+                    <i class="fas fa-directions"></i> Navigate
+                </button>
+            </div>
+        </div>
+    `);
+
+    routeLine.on('click', function() {
+        showRouteInstructions(job, route, info);
+    });
+
+    routes.push(routeLine);
+}
+
+function createStraightRoute(job) {
+    const routeColor = job.status === 'Pending' ? '#FFA000' : '#388E3C';
+    const dashArray = job.status === 'Pending' ? '10, 10' : null;
+
+    const polyline = L.polyline(
+        [[job.lat, job.lng], [job.deliveryLat, job.deliveryLng]],
+        {
+            color: routeColor,
+            weight: 4,
+            opacity: 0.8,
+            dashArray: dashArray
+        }
+    ).addTo(map);
+
+    const distance = calculateDistance(job.lat, job.lng, job.deliveryLat, job.deliveryLng);
+    const eta = calculateETA(job.lat, job.lng, job.deliveryLat, job.deliveryLng);
+
+    polyline.bindPopup(`
+        <div style="padding:0.5rem;">
+            <strong>${job.crop}</strong><br>
+            Distance: ${distance.toFixed(2)} km<br>
+            ETA: ~${eta} mins<br>
+            <small style="color:#f57c00;">(Straight line - road route unavailable)</small>
+        </div>
+    `);
+
+    return polyline;
+}
+
+function showRouteInstructions(job, route, info) {
+    const distanceKm = (info.distance / 1000).toFixed(1);
+    const durationMins = Math.round(info.duration / 60);
+
+    let instructionsHtml = `
+        <div style="max-height:300px; overflow-y:auto;">
+            <h4 style="margin:0 0 0.5rem 0;">${job.crop} → ${job.destination}</h4>
+            <p><strong>Total:</strong> ${distanceKm} km, ~${durationMins} min</p>
+            <hr style="margin:0.5rem 0; border:0; border-top:1px solid #eee;">
+    `;
+
+    if (route.legs && route.legs.length > 0) {
+        const leg = route.legs[0];
+        let stepNum = 0;
+        
+        leg.steps.forEach((step, index) => {
+            if (step.maneuver && step.maneuver.type !== 'arrive') {
+                const instruction = step.maneuver.instruction || `${step.maneuver.type} ${step.maneuver.modifier || ''}`;
+                const distance = (step.distance / 1000).toFixed(1);
+                const duration = Math.round(step.duration / 60);
+                
+                if (distance > 0.05) {
+                    stepNum++;
+                    instructionsHtml += `
+                        <div style="padding:0.3rem 0; border-bottom:1px solid #f5f5f5; display:flex; gap:0.5rem; align-items:flex-start;">
+                            <span style="background:#e8f5e9; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;">${stepNum}</span>
+                            <div style="flex:1; font-size:0.85rem;">
+                                <div>${instruction}</div>
+                                <small style="color:#666;">${distance} km, ~${duration} min</small>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    }
+
+    instructionsHtml += '</div>';
+    
+    L.popup({ maxWidth: 350 }).setLatLng(map.getCenter()).setContent(instructionsHtml).openOn(map);
+}
+
+function createPickupPopup(job) {
+    const actionButtons = job.status === 'Pending' 
+        ? `<button onclick="acceptJob(${job.id})" class="btn btn-success btn-sm">Accept Job</button>`
+        : `<span style="color:var(--success); font-weight:bold;"><i class="fas fa-check"></i> ${job.driver_name || 'Accepted'}</span>`;
+    
+    const timeline = createJobTimeline(job);
+    
+    return `
+        <div class="popup-content">
+            <h4><i class="fas fa-box"></i> Pickup Point</h4>
+            <p><strong>Location:</strong> ${job.location}</p>
+            <p><strong>Crop:</strong> ${job.crop}</p>
+            <p><strong>Weight:</strong> ${job.weight}kg</p>
+            <p><strong>Status:</strong> <span class="tag ${job.status.toLowerCase()}">${job.status}</span></p>
+            ${timeline}
+            <div class="popup-actions">
+                ${actionButtons}
+                <button onclick="navigateTo(${job.lat}, ${job.lng})" class="btn btn-primary btn-sm">Navigate</button>
+            </div>
+        </div>
+    `;
+}
+
+// === JOB STATUS TIMELINE ===
+function createJobTimeline(job) {
+    const statuses = ['Pending', 'Accepted', 'Picked Up', 'In Transit', 'Delivered'];
+    const currentStatus = job.status || 'Pending';
+    const currentIndex = statuses.indexOf(currentStatus);
+    
+    let history = [];
+    try {
+        history = JSON.parse(job.status_history || '[]');
+    } catch(e) {
+        history = [];
+    }
+    
+    let timelineHtml = '<div class="job-timeline">';
+    
+    statuses.forEach((status, index) => {
+        const isCompleted = index <= currentIndex;
+        const isActive = index === currentIndex;
+        const historyEntry = history.find(h => h.status === status);
+        const timeStr = historyEntry ? new Date(historyEntry.timestamp).toLocaleTimeString() : '';
+        
+        timelineHtml += `
+            <div class="job-timeline-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
+                <div class="step-dot"></div>
+                <span class="step-label">${status}</span>
+            </div>
+        `;
+    });
+    
+    timelineHtml += '</div>';
+    
+    if (job.driver_name) {
+        timelineHtml += `<p><strong>Driver:</strong> ${job.driver_name}</p>`;
+    }
+    
+    return timelineHtml;
+}
+
+function createDeliveryPopup(job) {
+    const distance = calculateDistance(job.lat, job.lng, job.deliveryLat, job.deliveryLng);
+    const eta = calculateETA(job.lat, job.lng, job.deliveryLat, job.deliveryLng);
+
+    return `
+        <div class="popup-content">
+            <h4><i class="fas fa-flag-checkered"></i> Delivery Point</h4>
+            <p><strong>Destination:</strong> ${job.destination}</p>
+            <p><strong>Distance:</strong> ${distance.toFixed(2)} km</p>
+            <p><strong>ETA:</strong> ~${eta} mins</p>
+            <div class="popup-actions">
+                <button onclick="navigateTo(${job.deliveryLat}, ${job.deliveryLng})" class="btn btn-primary btn-sm">Navigate</button>
+            </div>
+        </div>
+    `;
+}
+
+// === USER MARKERS ===
+function createUserMarker(user) {
+    const showFarmers = document.getElementById('filterFarmers').checked;
+    const showDrivers = document.getElementById('filterDrivers').checked;
+
+    if (user.role === 'farmer' && !showFarmers) return;
+    if (user.role === 'driver' && !showDrivers) return;
+
+    const jobs = window.KUHA.getJobs();
+    
+    let connectedJobs = [];
+    if (user.role === 'farmer') {
+        connectedJobs = jobs.filter(j => j.location && j.location.toLowerCase().includes(user.name.toLowerCase().split(' ')[0]));
+    } else if (user.role === 'driver') {
+        connectedJobs = jobs.filter(j => j.driver_name && j.driver_name.toLowerCase().includes(user.name.toLowerCase().split(' ')[0]));
+    }
+
+    const jobCount = connectedJobs.length;
+    const activeJobs = connectedJobs.filter(j => j.status === 'Accepted').length;
+    const pendingJobs = connectedJobs.filter(j => j.status === 'Pending').length;
+
+    const icon = MarkerFactory.createCustomIcon(user.role);
+
+    const marker = L.marker([user.lat, user.lng], { icon: icon })
+        .bindPopup(`
+            <div class="popup-content">
+                <h4><i class="fas fa-${user.role === 'farmer' ? 'tractor' : 'truck'}"></i> ${escapeHtml(user.name)}</h4>
+                <p><strong>Role:</strong> ${escapeHtml(user.role.charAt(0).toUpperCase() + user.role.slice(1))}</p>
+                <p><strong>Email:</strong> ${escapeHtml(user.email)}</p>
+                <p><strong>Phone:</strong> ${escapeHtml(user.phone || 'N/A')}</p>
+                ${jobCount > 0 ? `
+                    <hr style="margin:0.5rem 0; border:0; border-top:1px solid #eee;">
+                    <p style="margin:0.3rem 0;">
+                        <i class="fas fa-briefcase"></i> 
+                        <strong>${jobCount}</strong> job(s) · 
+                        <span style="color:#FFA000;">${pendingJobs} pending</span> · 
+                        <span style="color:#388E3C;">${activeJobs} active</span>
+                    </p>
+                ` : ''}
+                <div class="popup-actions">
+                    <button onclick="showUserJobs('${escapeHtml(user.role)}', ${user.id})" class="btn btn-primary btn-sm" style="flex:1;">
+                        <i class="fas fa-eye"></i> View Jobs
+                    </button>
+                </div>
+            </div>
+        `);
+
+    markerClusterGroup.addLayer(marker);
+    markers.push(marker);
+}
+
+function showUserJobs(role, userId) {
+    const users = window.KUHA.getUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    
+    const jobs = window.KUHA.getJobs();
+    let userJobs = [];
+    
+    if (role === 'farmer') {
+        userJobs = jobs.filter(j => j.location && j.email && j.email.includes(user.email.split('@')[0]));
+    } else {
+        userJobs = jobs.filter(j => j.driver_name && j.driver_name.toLowerCase().includes(user.name.toLowerCase().split(' ')[0]));
+    }
+    
+    if (userJobs.length === 0) {
+        showToast('No jobs found for this user', 'info');
+        return;
+    }
+    
+    const jobsText = userJobs.map(j => `${j.crop} - ${j.status} (${j.location} → ${j.destination})`).join('\n');
+    showToast(`${user.name}'s Jobs: ${jobsText}`, 'info');
+}
+
+// === ENHANCED SEARCH ===
+const SEARCH_DEBOUNCE = 300;
+const MAX_SEARCH_RESULTS = 8;
+let searchInputTimeout = null;
+let searchMarkers = [];
+
+function handleSearchInput(query) {
+    clearTimeout(searchInputTimeout);
+    
+    if (!query || query.length < 2) {
+        showRecentSearches();
+        return;
+    }
+    
+    document.getElementById('searchDropdown').classList.add('active');
+    document.getElementById('recentSearches').style.display = 'none';
+    document.getElementById('searchResults').style.display = 'block';
+    document.getElementById('resultsList').innerHTML = '<div class="dropdown-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+    
+    searchInputTimeout = setTimeout(async () => {
+        try {
+            const results = await performSearch(query);
+            displaySearchResults(results);
+        } catch (error) {
+            document.getElementById('resultsList').innerHTML = '<div class="dropdown-loading" style="color:red;">Search error</div>';
+        }
+    }, SEARCH_DEBOUNCE);
+}
+
+async function performSearch(query) {
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Philippines')}&limit=${MAX_SEARCH_RESULTS}`,
+            { headers: { 'User-Agent': 'KUHA/1.0' } }
+        );
+        return await response.json();
+    } catch (error) {
+        console.error('Search error:', error);
+        return [];
+    }
+}
+
+function displaySearchResults(results) {
+    const container = document.getElementById('resultsList');
+    
+    if (!results || results.length === 0) {
+        container.innerHTML = '<div class="dropdown-loading">No results found</div>';
+        return;
+    }
+    
+    container.innerHTML = results.map((result, index) => {
+        const icon = getLocationIcon(result.type || result.class);
+        const displayName = result.display_name.split(',')[0];
+        const address = result.display_name.split(',').slice(1, 3).join(',');
+        
+        return `
+            <div class="dropdown-item" onclick="selectSearchResult(${result.lat}, ${result.lon}, '${escapeHtml(displayName)}', '${escapeHtml(result.type || 'place')}')">
+                <div class="item-icon"><i class="fas fa-${icon}"></i></div>
+                <div class="item-info">
+                    <div class="item-name">${escapeHtml(displayName)}</div>
+                    <div class="item-address">${escapeHtml(address)}</div>
+                </div>
+                <span class="item-type">${escapeHtml(result.type || 'place')}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function getLocationIcon(type) {
+    const icons = {
+        'city': 'city',
+        'town': 'building',
+        'village': 'home',
+        'suburb': 'map-marker-alt',
+        'hamlet': 'home',
+        'address': 'home',
+        'road': 'road',
+        'farm': 'tractor',
+        'restaurant': 'utensils',
+        'school': 'school',
+        'hospital': 'hospital',
+        'bank': 'university',
+        'church': 'church',
+        'marketplace': 'store'
+    };
+    
+    const key = Object.keys(icons).find(k => type && type.toLowerCase().includes(k));
+    return icons[key] || 'map-marker-alt';
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function showSearchDropdown() {
+    const dropdown = document.getElementById('searchDropdown');
+    if (dropdown) {
+        dropdown.classList.add('active');
+        showRecentSearches();
+    }
+}
+
+function hideSearchDropdown() {
+    setTimeout(() => {
+        document.getElementById('searchDropdown').classList.remove('active');
+    }, 200);
+}
+
+function showRecentSearches() {
+    const dropdown = document.getElementById('searchDropdown');
+    if (!dropdown) return;
+    
+    dropdown.classList.add('active');
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('recentSearches').style.display = 'block';
+    
+    const recent = getRecentSearches();
+    const container = document.getElementById('recentList');
+    
+    if (recent.length === 0) {
+        container.innerHTML = '<div class="dropdown-item" style="color:#999; cursor:default;">No recent searches</div>';
+        return;
+    }
+    
+    container.innerHTML = recent.slice(0, 5).map(s => `
+        <div class="dropdown-item" onclick="selectSearchResult(${s.lat}, ${s.lng}, '${escapeHtml(s.name)}', 'recent')">
+            <div class="item-icon"><i class="fas fa-history"></i></div>
+            <div class="item-info">
+                <div class="item-name">${escapeHtml(s.name)}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getRecentSearches() {
+    try {
+        return JSON.parse(localStorage.getItem('kuha_recent_searches') || '[]');
+    } catch { return []; }
+}
+
+function clearRecentSearches() {
+    localStorage.removeItem('kuha_recent_searches');
+    showRecentSearches();
+    showToast('Recent searches cleared', 'info');
+}
+
+// === GEOCODING ===
+async function selectSearchResult(lat, lon, name, type) {
+    if (!map) {
+        showToast('Map not initialized', 'error');
+        return;
+    }
+    
+    clearSearchMarkers();
+    
+    const marker = L.marker([lat, lon], {
+        icon: L.divIcon({
+            className: 'search-marker',
+            html: '<div class="marker-pin" style="background:#2e7d32"><i class="fas fa-search"></i></div><div class="marker-shadow"></div>',
+            iconSize: [40, 50],
+            iconAnchor: [20, 50]
+        })
+    }).addTo(map);
+    
+    marker.bindPopup(`
+        <div class="popup-content">
+            <h4><i class="fas fa-map-marker-alt"></i> ${escapeHtml(name)}</h4>
+            <p>Lat: ${parseFloat(lat).toFixed(6)}, Lng: ${parseFloat(lon).toFixed(6)}</p>
+            <div class="popup-actions">
+                <button onclick="setAsPickup(${lat}, ${lon})" class="btn btn-success btn-sm"><i class="fas fa-box"></i> Set Pickup</button>
+                <button onclick="setAsDelivery(${lat}, ${lon})" class="btn btn-primary btn-sm"><i class="fas fa-flag-checkered"></i> Set Delivery</button>
+            </div>
+        </div>
+    `).openPopup();
+    
+    searchMarkers.push(marker);
+    map.flyTo([lat, lon], 15, { duration: 1.0 });
+    
+    if (type !== 'recent') {
+        addToRecentSearches({ name, lat, lon });
+    }
+    
+    searchNearbyJobs(lat, lon);
+    
+    hideSearchDropdown();
+    showToast(`Location: ${name}`, 'success');
+}
+
+function clearSearchMarkers() {
+    searchMarkers.forEach(m => map.removeLayer(m));
+    searchMarkers = [];
+}
+
+function addToRecentSearches(search) {
+    const recent = getRecentSearches();
+    const existing = recent.findIndex(r => r.name === search.name);
+    
+    if (existing > -1) recent.splice(existing, 1);
+    recent.unshift({ ...search, time: Date.now() });
+    
+    if (recent.length > 10) recent.pop();
+    localStorage.setItem('kuha_recent_searches', JSON.stringify(recent));
+}
+
+async function searchNearbyJobs(lat, lon) {
+    const radius = 5;
+    const jobs = window.KUHA.getJobs();
+    
+    const nearbyJobs = jobs.filter(job => {
+        if (!job.lat || !job.lng) return false;
+        const dist = calculateDistance(lat, lon, job.lat, job.lng);
+        return dist <= radius;
+    });
+    
+    if (nearbyJobs.length > 0) {
+        showToast(`${nearbyJobs.length} job(s) within ${radius}km`, 'info');
+        
+        nearbyJobs.forEach(job => {
+            const routeColor = job.status === 'Pending' ? '#FFA000' : '#388E3C';
+            const line = L.polyline([[lat, lon], [job.lat, job.lng]], {
+                color: routeColor,
+                weight: 2,
+                opacity: 0.6,
+                dashArray: '5, 5'
+            }).addTo(map);
+            routes.push(line);
+        });
+    }
+}
+
+async function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        showToast('Geolocation not supported', 'error');
+        return;
+    }
+    
+    showToast('Getting your location...', 'info');
+    
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            let locationName = 'My Location';
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+                    { headers: { 'User-Agent': 'KUHA/1.0' } }
+                );
+                const data = await response.json();
+                if (data.display_name) {
+                    locationName = data.display_name.split(',')[0];
+                }
+            } catch {}
+            
+            selectSearchResult(lat, lon, locationName, 'current');
+            showToast('Location found!', 'success');
+        },
+        (error) => {
+            showToast('Could not get location. Check permissions.', 'error');
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+function setAsPickup(lat, lng) {
+    localStorage.setItem('tempPickup', JSON.stringify({ lat, lng }));
+    showToast('Pickup point set!', 'success');
+}
+
+function setAsDelivery(lat, lng) {
+    localStorage.setItem('tempDelivery', JSON.stringify({ lat, lng }));
+    showToast('Delivery point set!', 'success');
+}
+
+async function searchLocation() {
+    const query = document.getElementById('searchInput').value;
+    if (!query) {
+        showToast('Please enter a location', 'warning');
+        return;
+    }
+
+    if (!map) {
+        showToast('Map not initialized', 'error');
+        return;
+    }
+
+    showLoading(true);
+
+    try {
+        const results = await performSearch(query);
+
+        if (results.length === 0) {
+            showToast('Location not found', 'error');
+            showLoading(false);
+            return;
+        }
+
+        const result = results[0];
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+        const name = result.display_name.split(',')[0];
+
+        await selectSearchResult(lat, lon, name, 'search');
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        showToast('Search failed. Please try again.', 'error');
+    }
+
+    showLoading(false);
+}
+
+async function geocodeAndCreateJob(job) {
+    if (!map) {
+        console.error('Map not initialized');
+        return;
+    }
+
+    try {
+        const [pickupResponse, deliveryResponse] = await Promise.all([
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(job.location + ', Philippines')}&limit=1`, {
+                headers: { 'User-Agent': 'KUHA/1.0' }
+            }),
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(job.destination + ', Philippines')}&limit=1`, {
+                headers: { 'User-Agent': 'KUHA/1.0' }
+            })
+        ]);
+        
+        const pickupResults = await pickupResponse.json();
+        const deliveryResults = await deliveryResponse.json();
+
+        if (pickupResults.length > 0 && deliveryResults.length > 0) {
+            job.lat = parseFloat(pickupResults[0].lat);
+            job.lng = parseFloat(pickupResults[0].lon);
+            job.deliveryLat = parseFloat(deliveryResults[0].lat);
+            job.deliveryLng = parseFloat(deliveryResults[0].lon);
+
+            createJobMarkers(job);
+            await createJobRoute(job);
+        } else {
+            console.warn('Geocoding failed for job:', job.id);
+            showToast(`Geocoding failed for job #${job.id}`, 'warning');
+        }
+    } catch (error) {
+        console.error('Geocoding error:', error);
+        showToast(`Failed to geocode job #${job.id}`, 'error');
+    }
+}
+
+// === GEOLOCATION ===
+function toggleGeolocation() {
+    if (isTracking) {
+        stopGeolocation();
+    } else {
+        startGeolocation();
+    }
+}
+
+function startGeolocation() {
+    if (!navigator.geolocation) {
+        showToast('Geolocation not supported', 'error');
+        return;
+    }
+
+    const geoBtn = document.getElementById('geoBtn');
+    geoBtn.classList.add('active');
+    isTracking = true;
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            updateUserLocation(position);
+            
+            watchId = navigator.geolocation.watchPosition(
+                (position) => updateUserLocation(position),
+                (error) => {
+                    showToast('Location tracking error', 'error');
+                    stopGeolocation();
+                },
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
+            );
+
+            showToast('Location tracking started', 'success');
+        },
+        (error) => {
+            showToast('Please enable location access', 'error');
+            stopGeolocation();
+        },
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
+    );
+}
+
+function stopGeolocation() {
+    const geoBtn = document.getElementById('geoBtn');
+    geoBtn.classList.remove('active');
+    isTracking = false;
+
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+
+    showToast('Location tracking stopped', 'info');
+}
+
+function updateUserLocation(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    if (userMarker) {
+        userMarker.setLatLng([lat, lng]);
+    } else {
+        const userIcon = L.divIcon({
+            className: 'custom-marker marker-user',
+            html: '<i class="fas fa-star"></i>',
+            iconSize: [35, 35],
+            iconAnchor: [17, 17]
+        });
+
+        userMarker = L.marker([lat, lng], { icon: userIcon })
+            .addTo(map)
+            .bindPopup('<b>Your Location</b>');
+        
+        map.setView([lat, lng], 15);
+    }
+}
+
+
+
+// === STATS & UI ===
+let previousStats = null;
+let currentJobFilter = 'all';
+
+function updateStats() {
+    const jobs = window.KUHA.getJobs();
+    const users = window.KUHA.getUsers();
+    const totalJobs = jobs.length;
+    const pendingJobs = jobs.filter(j => j.status === 'Pending').length;
+    const activeJobs = jobs.filter(j => j.status === 'Accepted').length;
+    
+    const farmers = users.filter(u => u.role === 'farmer').length;
+    const drivers = users.filter(u => u.role === 'driver').length;
+
+    let totalDistance = 0;
+    jobs.forEach(job => {
+        if (job.lat && job.lng && job.deliveryLat && job.deliveryLng) {
+            totalDistance += calculateDistance(job.lat, job.lng, job.deliveryLat, job.deliveryLng);
+        }
+    });
+
+    // Calculate trends
+    const trends = calculateTrends(totalJobs, pendingJobs, activeJobs, totalDistance);
+    updateTrendDisplay(trends);
+
+    // Update completion rate
+    const completionRate = totalJobs > 0 ? Math.round((activeJobs / totalJobs) * 100) : 0;
+    document.getElementById('completionRate').textContent = completionRate + '%';
+    document.getElementById('completionFill').style.width = completionRate + '%';
+
+    animateStatValue('statTotalJobs', totalJobs);
+    animateStatValue('statPendingJobs', pendingJobs);
+    animateStatValue('statActiveJobs', activeJobs);
+    animateStatValue('statTotalDistance', totalDistance, true);
+
+    // Update analytics
+    updateAnalytics(jobs);
+    updateDriverStatus(jobs, users);
+    updateActivityFeed(jobs);
+    updateJobCount(jobs);
+
+    // Store for next comparison
+    previousStats = { totalJobs, pendingJobs, activeJobs, totalDistance };
+}
+
+function calculateTrends(totalJobs, pendingJobs, activeJobs, totalDistance) {
+    if (!previousStats) {
+        return { total: 0, pending: 0, active: 0, distance: 0 };
+    }
+    
+    const calcTrend = (current, previous) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return Math.round(((current - previous) / previous) * 100);
+    };
+    
+    return {
+        total: calcTrend(totalJobs, previousStats.totalJobs),
+        pending: calcTrend(pendingJobs, previousStats.pendingJobs),
+        active: calcTrend(activeJobs, previousStats.activeJobs),
+        distance: calcTrend(Math.round(totalDistance), Math.round(previousStats.totalDistance))
+    };
+}
+
+function updateTrendDisplay(trends) {
+    const setTrend = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        
+        el.textContent = (value >= 0 ? '+' : '') + value + '%';
+        el.className = 'stat-trend ' + (value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral');
+    };
+    
+    setTrend('trendTotalJobs', trends.total);
+    setTrend('trendPendingJobs', trends.pending);
+    setTrend('trendActiveJobs', trends.active);
+    setTrend('trendDistance', trends.distance);
+}
+
+function updateAnalytics(jobs) {
+    // Crop Distribution
+    const cropCount = {};
+    jobs.forEach(j => {
+        const crop = j.crop || 'Unknown';
+        cropCount[crop] = (cropCount[crop] || 0) + 1;
+    });
+    
+    const maxCrop = Math.max(...Object.values(cropCount), 1);
+    const crops = Object.entries(cropCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    
+    const cropChart = document.getElementById('cropChart');
+    if (cropChart) {
+        cropChart.innerHTML = crops.map(([crop, count]) => `
+            <div class="bar" style="height: ${(count / maxCrop) * 100}%">
+                <span class="bar-value">${count}</span>
+                <span class="bar-label">${crop.substring(0, 4)}</span>
+            </div>
+        `).join('');
+    }
+    
+    // Top Destinations
+    const destCount = {};
+    jobs.forEach(j => {
+        const dest = j.destination || 'Unknown';
+        destCount[dest] = (destCount[dest] || 0) + 1;
+    });
+    
+    const topDests = Object.entries(destCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    
+    const destContainer = document.getElementById('topDestinations');
+    if (destContainer) {
+        destContainer.innerHTML = topDests.length > 0 ? topDests.map(([dest, count], i) => `
+            <div class="destination-item">
+                <span class="destination-rank">${i + 1}</span>
+                <span class="destination-name">${dest}</span>
+                <span class="destination-count">${count}</span>
+            </div>
+        `).join('') : '<p style="color:var(--text-muted); font-size:0.75rem; text-align:center;">No data</p>';
+    }
+    
+    // Weekly Trends (last 7 days)
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayCount = {};
+    const today = new Date();
+    
+    days.forEach(d => dayCount[d] = 0);
+    
+    jobs.forEach(j => {
+        try {
+            const date = new Date(j.timestamp);
+            const day = days[date.getDay()];
+            if (date > new Date(today - 7 * 24 * 60 * 60 * 1000)) {
+                dayCount[day]++;
+            }
+        } catch (e) {}
+    });
+    
+    const maxDay = Math.max(...Object.values(dayCount), 1);
+    const trendsChart = document.getElementById('trendsChart');
+    if (trendsChart) {
+        trendsChart.innerHTML = days.map(day => `
+            <div class="day">
+                <div class="day-bar" style="height: ${(dayCount[day] / maxDay) * 100}%"></div>
+                <span class="day-label">${day}</span>
+            </div>
+        `).join('');
+    }
+}
+
+function updateDriverStatus(jobs, users) {
+    const drivers = users.filter(u => u.role === 'driver');
+    const activeDrivers = drivers.filter(d => jobs.some(j => j.driver_name && j.driver_name.toLowerCase().includes(d.name.toLowerCase().split(' ')[0])));
+    const onlineDrivers = drivers.length;
+    const busyDrivers = activeDrivers.length;
+    const offlineDrivers = Math.max(0, drivers.length - onlineDrivers);
+    
+    document.getElementById('onlineDrivers').textContent = onlineDrivers;
+    document.getElementById('busyDrivers').textContent = busyDrivers;
+    document.getElementById('offlineDrivers').textContent = drivers.length > 0 ? Math.max(0, drivers.length - busyDrivers) : 0;
+}
+
+function updateActivityFeed(jobs) {
+    const recentJobs = [...jobs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+    
+    const container = document.getElementById('activityList');
+    if (container) {
+        container.innerHTML = recentJobs.length > 0 ? recentJobs.map(job => {
+            const time = new Date(job.timestamp);
+            const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const isAccepted = job.status === 'Accepted';
+            
+            return `
+                <div class="activity-item ${isAccepted ? 'job-accepted' : 'job-created'}">
+                    <div class="activity-time">${timeStr}</div>
+                    <div class="activity-desc">
+                        <i class="fas fa-${isAccepted ? 'truck' : 'box'}"></i> 
+                        ${isAccepted ? 'Job accepted' : 'New job'}: ${job.crop}
+                    </div>
+                </div>
+            `;
+        }).join('') : '<p style="color:var(--text-muted); font-size:0.75rem; text-align:center;">No recent activity</p>';
+    }
+}
+
+function updateJobCount(jobs) {
+    const filtered = currentJobFilter === 'all' ? jobs : jobs.filter(j => j.status === currentJobFilter);
+    document.getElementById('jobCount').textContent = filtered.length;
+}
+
+function setJobFilter(filter, btn) {
+    currentJobFilter = filter;
+    
+    document.querySelectorAll('.job-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    renderJobList();
+}
+
+function filterJobsList(query) {
+    const jobs = window.KUHA.getJobs();
+    const filtered = currentJobFilter === 'all' ? jobs : jobs.filter(j => j.status === currentJobFilter);
+    const searchLower = query.toLowerCase();
+    
+    const filteredJobs = query ? filtered.filter(j => 
+        j.crop.toLowerCase().includes(searchLower) ||
+        j.location.toLowerCase().includes(searchLower) ||
+        j.destination.toLowerCase().includes(searchLower) ||
+        (j.driver_name && j.driver_name.toLowerCase().includes(searchLower))
+    ) : filtered;
+    
+    renderJobListFiltered(filteredJobs);
+}
+
+function renderJobListFiltered(jobs) {
+    const container = document.getElementById('jobListContainer');
+    const jobCount = document.getElementById('jobCount');
+    
+    if (jobCount) jobCount.textContent = jobs.length;
+    
+    if (!container) return;
+    
+    if (jobs.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:1rem;">No jobs found</p>';
+        return;
+    }
+    
+    container.innerHTML = jobs.map(job => `
+        <div class="job-item" onclick="focusOnJob(${job.id})">
+            <div class="job-header">
+                <span class="job-title">${escapeHtml(job.crop)} (${job.weight}kg)</span>
+                <span class="job-status ${escapeHtml(job.status.toLowerCase())}">${escapeHtml(job.status)}</span>
+            </div>
+            <div class="job-route">
+                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(job.location)} → ${escapeHtml(job.destination)}
+            </div>
+            <div class="job-meta">
+                <span><i class="fas fa-clock"></i> ${escapeHtml(job.timestamp)}</span>
+                ${job.driver_name ? `<span><i class="fas fa-user"></i> ${escapeHtml(job.driver_name)}</span>` : ''}
+            </div>
+            ${job.driver_name ? `<div class="job-driver"><i class="fas fa-truck"></i> Driver assigned</div>` : ''}
+        </div>
+    `).join('');
+}
+
+function animateStatValue(elementId, value, isDecimal = false) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const duration = 1000;
+    const start = 0;
+    const end = value;
+    const startTime = performance.now();
+
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = start + (end - start) * easeOutQuart;
+
+        element.textContent = isDecimal ? current.toFixed(1) : Math.round(current);
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+function renderJobList() {
+    const jobs = window.KUHA?.getJobs?.() || [];
+    const filtered = currentJobFilter === 'all' ? jobs : jobs.filter(j => j.status === currentJobFilter);
+    
+    if (filtered.length === 0) {
+        const container = document.getElementById('jobListContainer');
+        if (container) container.innerHTML = 
+            '<p style="text-align:center; color:var(--text-muted); padding:1rem;">No jobs available</p>';
+        return;
+    }
+
+    const container = document.getElementById('jobListContainer');
+    if (!container) return;
+    container.innerHTML = filtered.map(job => `
+        <div class="job-item" onclick="focusOnJob(${job.id})">
+            <div class="job-header">
+                <span class="job-title">${escapeHtml(job.crop)} (${job.weight}kg)</span>
+                <span class="job-status ${escapeHtml(job.status.toLowerCase())}">${escapeHtml(job.status)}</span>
+            </div>
+            <div class="job-route">
+                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(job.location)} → ${escapeHtml(job.destination)}
+            </div>
+            <div class="job-meta">
+                <span><i class="fas fa-clock"></i> ${escapeHtml(job.timestamp)}</span>
+                ${job.driver_name ? `<span><i class="fas fa-user"></i> ${escapeHtml(job.driver_name)}</span>` : ''}
+            </div>
+            ${job.driver_name ? `<div class="job-driver"><i class="fas fa-truck"></i> Driver assigned</div>` : ''}
+        </div>
+    `).join('');
+}
+
+async function acceptJob(jobId) {
+    const driverName = prompt('Enter your name to accept this job:');
+    if (!driverName) return;
+
+    try {
+        const result = await apiCall(`/api/jobs/${jobId}/accept`, 'PUT', {
+            driver_name: driverName
+        });
+        
+        showToast('Job accepted!', 'success');
+        refreshMap();
+        
+        if (result.job && result.job.lat && result.job.lng) {
+            map.flyTo([result.job.lat, result.job.lng], 15);
+        }
+    } catch (error) {
+        showToast(error.message || 'Failed to accept job', 'error');
+    }
+}
+
+async function updateJobStatus(jobId, newStatus) {
+    try {
+        const result = await apiCall(`/api/jobs/${jobId}/status`, 'PUT', {
+            status: newStatus
+        });
+        
+        showToast('Job status: ' + newStatus, 'success');
+        refreshMap();
+    } catch (error) {
+        showToast(error.message || 'Failed to update status', 'error');
+    }
+}
+
+async function deleteJob(jobId) {
+    if (!confirm('Are you sure you want to delete this job?')) return;
+
+    try {
+        await apiCall(`/api/jobs/${jobId}`, 'DELETE');
+        showToast('Job deleted', 'success');
+        refreshMap();
+    } catch (error) {
+        showToast(error.message || 'Failed to delete job', 'error');
+    }
+}
+
+function focusOnJob(jobId) {
+    const jobs = window.KUHA.getJobs();
+    const job = jobs.find(j => j.id === jobId);
+
+    if (job && job.lat && job.lng) {
+        map.flyTo([job.lat, job.lng], 15, { duration: 1.5 });
+        
+        const panel = document.getElementById('sidePanel');
+        if (panel.classList.contains('collapsed')) {
+            toggleSidePanel();
+        }
+
+        showToast(`Focused on job #${jobId}`, 'info');
+    }
+}
+
+function viewJobDetails(jobId) {
+    focusOnJob(jobId);
+}
+
+function navigateTo(lat, lng) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
+    showToast('Opening navigation...', 'info');
+}
+
+async function calculateRouteOnMap(startLat, startLng, endLat, endLng) {
+    if (!routingService) {
+        showToast('Routing service not initialized', 'error');
+        return;
+    }
+
+    try {
+        const route = await routingService.getRoute(
+            { lat: startLat, lng: startLng },
+            { lat: endLat, lng: endLng },
+            false
+        );
+
+        if (route.routes && route.routes.length > 0) {
+            const routeData = route.routes[0];
+            
+            const routeLine = L.geoJSON(routeData.geometry, {
+                style: {
+                    color: '#1a73e8',
+                    weight: 5,
+                    opacity: 0.8
+                }
+            }).addTo(map);
+
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+            const distanceKm = (routeData.distance / 1000).toFixed(2);
+            const durationMins = Math.round(routeData.duration / 60);
+
+            showToast(`Route: ${distanceKm}km, ~${durationMins} mins`, 'success');
+
+            routeLine.bindPopup(`
+                <div style="padding:0.5rem;">
+                    <strong>Route Info</strong><br>
+                    Distance: ${distanceKm} km<br>
+                    Duration: ~${durationMins} mins
+                </div>
+            `).openPopup();
+        }
+    } catch (error) {
+        console.error('Route calculation error:', error);
+        showToast('Failed to calculate route', 'error');
+    }
+}
+
+// === FILTERS ===
+function toggleMarkers() {
+    if (!map) return;
+
+    markers.forEach(marker => map.removeLayer(marker));
+    routes.forEach(route => map.removeLayer(route));
+    markerClusterGroup.clearLayers();
+    markers = [];
+    routes = [];
+
+    loadJobsOnMap();
+    loadUsersOnMap();
+
+    if (userMarker) {
+        map.addLayer(userMarker);
+    }
+}
+
+function resetFilters() {
+    document.getElementById('filterJobs').checked = true;
+    document.getElementById('filterRoutes').checked = true;
+    document.getElementById('filterFarmers').checked = true;
+    document.getElementById('filterDrivers').checked = true;
+    document.getElementById('filterPending').checked = true;
+    document.getElementById('filterAccepted').checked = true;
+
+    toggleMarkers();
+    showToast('Filters reset', 'success');
+}
+
+function fitAllMarkers() {
+    if (markers.length === 0) {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+        return;
+    }
+
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.1));
+    showToast('Fitted all markers', 'success');
+}
+
+// === SIDE PANEL ===
+function toggleSidePanel() {
+    const panel = document.getElementById('sidePanel');
+    const icon = panel.querySelector('.panel-toggle i');
+    
+    panel.classList.toggle('collapsed');
+    
+    if (panel.classList.contains('collapsed')) {
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-left');
+    } else {
+        icon.classList.remove('fa-chevron-left');
+        icon.classList.add('fa-chevron-right');
+    }
+}
+
+// === ADD JOB FROM MAP ===
+async function showAddJobPrompt(latlng) {
+    if (confirm(`Add new job at this location?\nLat: ${latlng.lat.toFixed(6)}\nLng: ${latlng.lng.toFixed(6)}`)) {
+        const location = prompt('Enter pickup location name:');
+        if (!location) return;
+
+        const destination = prompt('Enter delivery destination name:');
+        if (!destination) return;
+
+        const crop = prompt('Crop type:', 'Vegetables');
+        const weight = prompt('Weight (kg):', '100');
+
+        showLoading(true);
+
+        try {
+            const geocodeResults = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destination + ', Philippines')}&limit=1`, {
+                headers: { 'User-Agent': 'KUHA/1.0' }
+            });
+            const geocodeData = await geocodeResults.json();
+
+            let deliveryLat = latlng.lat + 0.01;
+            let deliveryLng = latlng.lng + 0.01;
+
+            if (geocodeData && geocodeData.length > 0) {
+                deliveryLat = parseFloat(geocodeData[0].lat);
+                deliveryLng = parseFloat(geocodeData[0].lon);
+            }
+
+            const newJob = await apiCall('/api/jobs', 'POST', {
+                location: location,
+                destination: destination,
+                crop: crop || 'Vegetables',
+                weight: parseInt(weight) || 100,
+                lat: latlng.lat,
+                lng: latlng.lng,
+                deliveryLat: deliveryLat,
+                deliveryLng: deliveryLng
+            });
+
+            createJobMarkers(newJob);
+            await createJobRoute(newJob);
+            updateStats();
+            renderJobList();
+            showToast('Job posted to database!', 'success');
+        } catch (error) {
+            console.error('Create job error:', error);
+            showToast(error.message || 'Failed to create job', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+// === UTILITIES ===
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+    if (show) {
+        overlay.classList.add('active');
+    } else {
+        overlay.classList.remove('active');
+    }
+}
+
+// showToast is now provided by utils.js via shim above
+
+function refreshMap() {
+    showLoading(true);
+    
+    markers.forEach(marker => map.removeLayer(marker));
+    routes.forEach(route => map.removeLayer(route));
+    markerClusterGroup.clearLayers();
+    markers = [];
+    routes = [];
+    routeCache.clear();
+    
+    setTimeout(() => {
+        loadAllData();
+        showToast('Map refreshed', 'success');
+    }, 500);
+}
+
+function cleanupOnExit() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    
+    if (heatmapManager) {
+        heatmapManager.removeFromMap();
+        heatmapManager = null;
+    }
+    
+    if (map) {
+        map.remove();
+        map = null;
+    }
+    
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('active');
+    }
+    
+    const toastContainer = document.getElementById('toastContainer');
+    if (toastContainer) {
+        toastContainer.innerHTML = '';
+    }
+}
+
+function toggleHeatmap() {
+    if (!map) {
+        showToast('Map not initialized', 'error');
+        return;
+    }
+
+    if (!heatmapManager) {
+        heatmapManager = new HeatmapManager(map);
+        const jobs = window.KUHA.getJobs();
+        const heatData = jobs
+            .filter(job => job.lat && job.lng)
+            .map(job => ({
+                lat: job.lat,
+                lng: job.lng,
+                intensity: job.status === 'Accepted' ? 1 : 0.6
+            }));
+        
+        if (heatData.length === 0) {
+            showToast('No data for heatmap', 'warning');
+            heatmapManager = null;
+            return;
+        }
+
+        heatmapManager.setData(heatData).render({ radius: 30, blur: 20 }).addToMap();
+        showToast('Heatmap enabled', 'info');
+    } else {
+        const isVisible = heatmapManager.toggle();
+        showToast(`Heatmap ${isVisible ? 'enabled' : 'disabled'}`, 'info');
+    }
+}
+
+let clusteringEnabled = true;
+
+function toggleClustering() {
+    clusteringEnabled = !clusteringEnabled;
+    
+    if (clusteringEnabled) {
+        if (!map.hasLayer(markerClusterGroup)) {
+            map.addLayer(markerClusterGroup);
+        }
+        showToast('Marker clustering enabled', 'info');
+    } else {
+        if (map.hasLayer(markerClusterGroup)) {
+            map.removeLayer(markerClusterGroup);
+        }
+        markers.forEach(m => {
+            if (!map.hasLayer(m)) map.addLayer(m);
+        });
+        showToast('Marker clustering disabled', 'info');
+    }
+}
+
+function exportMapData() {
+    const jobs = window.KUHA.getJobs();
+    const users = window.KUHA.getUsers();
+    
+    let csv = 'ID,Crop,Weight,Location,Destination,Status,Driver,Timestamp\n';
+    jobs.forEach(job => {
+        csv += `${job.id},"${job.crop}",${job.weight},"${job.location}","${job.destination}","${job.status}","${job.driver_name || ''}","${job.timestamp}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kuha_map_data_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    showToast('Data exported successfully!', 'success');
+}
+
+async function enhancedSearch(query) {
+    if (!query || query.length < 3) return [];
+    
+    return new Promise((resolve) => {
+        if (searchService) {
+            searchService.searchWithDebounce(query, async (results) => {
+                resolve(results);
+            });
+        } else {
+            resolve([]);
+        }
+    });
+}
+
+// === INITIALIZE ===
+let mapInitialized = false;
+
+// Initialize Socket.IO first
+initSocketIO();
+
+// Request push notification permission
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+            console.log('Push notifications granted');
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(function(permission) {
+                console.log('Push notification permission:', permission);
+            });
+        }
+    }
+}
+
+// Show browser notification
+function showBrowserNotification(title, body) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: body,
+            icon: '/static/design/img/logo.png',
+            badge: '/static/design/img/badge.png'
+        });
+    }
+}
+
+// Request permission on load
+requestNotificationPermission();
+
+// Call initMap directly
+initMap();
+
+function handleBackClick(e, targetUrl) {
+    if (e) {
+        e.preventDefault();
+    }
+    
+    cleanupOnExit();
+    
+    setTimeout(() => {
+        window.location.href = targetUrl || '/';
+    }, 100);
+    
+    return false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[DEBUG] DOMContentLoaded fired!');
+    
+    const backButtons = document.querySelectorAll('#backButton, #backBtn');
+    backButtons.forEach(btn => {
+        btn.removeEventListener('click', function(e) {});
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        cleanupOnExit();
+    });
+    
+    // Simply call initMap directly
+    mapInitialized = true;
+    initMap();
+});
+
+// Auto-refresh map data every 30 seconds using unified sync
+let mapRefreshInterval;
+function startMapSync() {
+    if (mapRefreshInterval) clearInterval(mapRefreshInterval);
+    
+    mapRefreshInterval = setInterval(async () => {
+        try {
+            const resp = await fetch('/api/jobs');
+            if (!resp.ok) return;
+            
+            const jobs = await resp.json();
+            const currentJobs = window.KUHA.getJobs() || [];
+            
+            // Check if data changed
+            const hasChanged = jobs.length !== currentJobs.length ||
+                jobs.some((j, i) => j.id !== currentJobs[i]?.id || j.status !== currentJobs[i]?.status);
+            
+            if (hasChanged) {
+                console.log('Auto-refresh: Data changed, updating map...');
+                window.KUHA.saveJobs(jobs);
+                clearMapMarkers();
+                loadJobsOnMap();
+                loadUsersOnMap();
+                updateStats();
+                renderJobList();
+            }
+        } catch (e) {
+            console.log('Auto-refresh skipped:', e.message);
+        }
+    }, 10000);
+    
+    // Also listen for cross-tab updates using shared storage events
+    window.KUHA.syncAcrossTabs((data) => {
+        console.log('Data updated from another tab:', data.type);
+        if (data.type === 'jobs' || data.type === 'users') {
+            clearMapMarkers();
+            loadJobsOnMap();
+            loadUsersOnMap();
+            updateStats();
+            renderJobList();
+        }
+    });
+}
+
+// Listen for cross-tab updates via storage event
+window.addEventListener('storage', (e) => {
+    if (e.key === 'kuha_data_version') {
+        try {
+            if (!e.newValue) return;
+            const data = JSON.parse(e.newValue);
+            if (data && data.jobs && Array.isArray(data.jobs)) {
+                console.log('Jobs updated from another tab');
+                window.KUHA.saveJobs(data.jobs);
+                window.KUHA.saveUsers(data.users || []);
+                clearMapMarkers();
+                loadJobsOnMap();
+                loadUsersOnMap();
+                updateStats();
+                renderJobList();
+            }
+        } catch (err) {
+            console.error('Error parsing cross-tab update:', err);
+        }
+    }
+});
+
+// Start sync after map loads
+setTimeout(startMapSync, 2000);
+    </script>
+</body>
+</html>

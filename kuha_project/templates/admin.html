@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="KUHA Admin Dashboard">
+<title>KUHA Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/design/css/style.css">
+<style>
+:root {
+--primary: #2e7d32;
+--primary-dark: #1b5e20;
+--primary-light: #4caf50;
+--accent: #ff9800;
+--accent-hover: #f57c00;
+--success: #388e3c;
+--danger: #d32f2f;
+--warning: #ffa000;
+--info: #1976d2;
+--white: #ffffff;
+--bg-light: #f5f5f5;
+--text-main: #333333;
+--text-muted: #757575;
+--shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+--shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+--radius-md: 8px;
+--transition-base: 0.3s ease;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Montserrat', sans-serif; color: var(--text-main); background: var(--bg-light); }
+
+.admin-container { min-height: 100vh; display: flex; flex-direction: column; }
+.admin-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: var(--primary); }
+.admin-header-logo { display: flex; align-items: center; gap: 0.8rem; }
+.admin-header-logo h2 { font-size: 1.5rem; color: white; display: flex; align-items: center; gap: 0.8rem; }
+.admin-header-logo p { color: rgba(255,255,255,0.8); font-size: 0.85rem; }
+.admin-header-actions { display: flex; gap: 1rem; align-items: center; }
+.notif-btn { position: relative; background: none; border: none; font-size: 1.2rem; color: white; cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: all 0.3s; }
+.notif-btn:hover { background: rgba(255,255,255,0.2); }
+.notification-badge { position: absolute; top: 0; right: 0; background: #ff5722; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; }
+
+.admin-nav { display: flex; gap: 0.5rem; padding: 1rem 2rem; background: #1b5e20; }
+.admin-nav .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
+.admin-nav .btn.btn-primary { background: white; color: var(--primary); }
+.admin-nav .btn.btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.5); color: white; }
+.admin-nav .btn.btn-outline:hover, .admin-nav .btn.btn-outline.active { border-color: white; color: white; background: rgba(255,255,255,0.15); }
+.admin-nav .btn.btn-danger { background: #d32f2f; color: white; margin-left: auto; }
+.admin-nav .btn.btn-danger:hover { background: #b71c1c; }
+
+.admin-panels { flex: 1; padding: 2rem; }
+.admin-panel { display: none; }
+.admin-panel.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.panel-header { margin-bottom: 2rem; }
+.panel-header h1 { font-size: 1.75rem; color: var(--primary); display: flex; align-items: center; gap: 0.8rem; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-md); border-left: 4px solid var(--primary); }
+.stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+.stat-card .stat-label { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; }
+
+.data-table { width: 100%; border-collapse: collapse; background: var(--white); box-shadow: var(--shadow-md); border-radius: 12px; overflow: hidden; }
+.data-table th { background: var(--primary); color: white; padding: 1rem; text-align: left; font-weight: 600; }
+.data-table td { padding: 1rem; border-bottom: 1px solid #eee; }
+.data-table tr:hover { background: #f5f5f5; }
+
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.status-badge.pending { background: #fff3e0; color: #e65100; }
+.status-badge.accepted { background: #e8f5e9; color: #2e7d32; }
+.status-badge.completed { background: #e3f2fd; color: #1976d2; }
+.status-badge.farmer { background: #e8f5e9; color: #2e7d32; }
+.status-badge.driver { background: #e3f2fd; color: #1976d2; }
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+
+.action-btn { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; margin-right: 5px; }
+.action-btn.accept { background: var(--success); color: white; }
+.action-btn.accept:hover { background: #2e7d32; }
+.action-btn.delete { background: var(--danger); color: white; }
+.action-btn.delete:hover { background: #b71c1c; }
+.action-btn.toggle { background: var(--info); color: white; }
+.action-btn.toggle:hover { background: #1565c0; }
+
+.filter-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.filter-bar input { padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; min-width: 250px; }
+.filter-bar input:focus { outline: none; border-color: var(--primary); }
+.filter-bar select { padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; background: white; }
+.filter-bar select:focus { outline: none; border-color: var(--primary); }
+.filter-bar .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.filter-bar .btn-success { background: var(--success); color: white; }
+
+.empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+.empty-state i { font-size: 3rem; margin-bottom: 1rem; color: #ddd; }
+
+@media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } .admin-nav { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<div class="admin-container">
+<div class="admin-header">
+<div class="admin-header-logo">
+<h2><i class="fas fa-leaf"></i> KUHA</h2>
+</div>
+<div class="admin-header-actions">
+<button class="notif-btn" onclick="loadNotifications()">
+<i class="fas fa-bell"></i>
+<span class="notification-badge" id="notifBadge">0</span>
+</button>
+</div>
+</div>
+
+<div class="admin-nav">
+<button onclick="showAdminPanel('overview')" class="btn btn-primary active" id="btn-overview">Overview</button>
+<button onclick="showAdminPanel('jobs')" class="btn btn-outline" id="btn-jobs">Jobs</button>
+<button onclick="showAdminPanel('users')" class="btn btn-outline" id="btn-users">Users</button>
+<button onclick="logout()" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+</div>
+
+<div class="admin-panels">
+<!-- OVERVIEW PANEL -->
+<div id="panel-overview" class="admin-panel active">
+<div class="panel-header">
+<h1><i class="fas fa-chart-line"></i> Dashboard Overview</h1>
+</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-value" id="stat-total-jobs">-</div><div class="stat-label">Total Jobs</div></div>
+<div class="stat-card"><div class="stat-value" id="stat-pending">-</div><div class="stat-label">Pending</div></div>
+<div class="stat-card"><div class="stat-value" id="stat-accepted">-</div><div class="stat-label">Accepted</div></div>
+<div class="stat-card"><div class="stat-value" id="stat-completed">-</div><div class="stat-label">Completed</div></div>
+</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-value" id="stat-users">-</div><div class="stat-label">Total Users</div></div>
+<div class="stat-card"><div class="stat-value" id="stat-farmers">-</div><div class="stat-label">Farmers</div></div>
+<div class="stat-card"><div class="stat-value" id="stat-drivers">-</div><div class="stat-label">Drivers</div></div>
+<div class="stat-card"><div class="stat-value" id="stat-weight">-</div><div class="stat-label">Total kg</div></div>
+</div>
+</div>
+
+<!-- JOBS PANEL -->
+<div id="panel-jobs" class="admin-panel">
+<div class="panel-header">
+<h1><i class="fas fa-briefcase"></i> Jobs Management</h1>
+</div>
+<div class="filter-bar">
+<input type="text" id="jobSearch" placeholder="Search jobs..." onkeyup="renderJobsList()">
+<select id="jobFilter" onchange="renderJobsList()">
+<option value="all">All Status</option>
+<option value="Pending">Pending</option>
+<option value="Accepted">Accepted</option>
+<option value="Completed">Completed</option>
+</select>
+</div>
+<table class="data-table">
+<thead>
+<tr><th>ID</th><th>Location</th><th>Crop</th><th>Weight</th><th>Destination</th><th>Fare</th><th>Status</th><th>Driver</th><th>Actions</th></tr>
+</thead>
+<tbody id="jobsTableBody">
+<tr><td colspan="9" class="empty-state"><i class="fas fa-spinner fa-spin"></i><div>Loading...</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- USERS PANEL -->
+<div id="panel-users" class="admin-panel">
+<div class="panel-header">
+<h1><i class="fas fa-users"></i> Users Management</h1>
+</div>
+<div class="filter-bar">
+<input type="text" id="userSearch" placeholder="Search users..." onkeyup="renderUsersList()">
+<select id="userRoleFilter" onchange="renderUsersList()">
+<option value="all">All Roles</option>
+<option value="farmer">Farmers</option>
+<option value="driver">Drivers</option>
+</select>
+</div>
+<table class="data-table">
+<thead>
+<tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+</thead>
+<tbody id="usersTableBody">
+<tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin"></i><div>Loading...</div></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+function logout() {
+localStorage.clear();
+window.location.href = '/';
+}
+
+async function showAdminPanel(panel) {
+document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.admin-nav .btn').forEach(b => b.classList.remove('active'));
+document.getElementById('panel-' + panel).classList.add('active');
+document.getElementById('btn-' + panel).classList.add('active');
+document.getElementById('btn-' + panel).classList.remove('btn-outline');
+document.getElementById('btn-' + panel).classList.add('btn-primary');
+
+if(panel === 'overview') loadAdminData();
+if(panel === 'jobs') renderJobsList();
+if(panel === 'users') renderUsersList();
+}
+
+async function loadAdminData() {
+try {
+const [jobsRes, usersRes] = await Promise.all([fetch('/api/jobs'), fetch('/api/users')]);
+const jobs = await jobsRes.json();
+const users = await usersRes.json();
+
+const pending = jobs.filter(j => j.status === 'Pending').length;
+const accepted = jobs.filter(j => j.status === 'Accepted').length;
+const completed = jobs.filter(j => j.status === 'Completed').length;
+const farmers = users.filter(u => u.role === 'farmer').length;
+const drivers = users.filter(u => u.role === 'driver').length;
+const totalWeight = jobs.reduce((sum, j) => sum + (parseInt(j.weight) || 0), 0);
+
+document.getElementById('stat-total-jobs').textContent = jobs.length;
+document.getElementById('stat-pending').textContent = pending;
+document.getElementById('stat-accepted').textContent = accepted;
+document.getElementById('stat-completed').textContent = completed;
+document.getElementById('stat-users').textContent = users.length;
+document.getElementById('stat-farmers').textContent = farmers;
+document.getElementById('stat-drivers').textContent = drivers;
+document.getElementById('stat-weight').textContent = totalWeight + ' kg';
+} catch(e) { console.error(e); }
+}
+
+async function renderJobsList() {
+const tbody = document.getElementById('jobsTableBody');
+if (!tbody) return;
+try {
+const res = await fetch('/api/jobs');
+const jobs = await res.json();
+const search = (document.getElementById('jobSearch')?.value || '').toLowerCase();
+const filter = document.getElementById('jobFilter')?.value || 'all';
+
+const filtered = jobs.filter(j => {
+const matchSearch = !search || (j.location || '').toLowerCase().includes(search) || (j.crop || '').toLowerCase().includes(search);
+const matchFilter = filter === 'all' || j.status === filter;
+return matchSearch && matchFilter;
+});
+
+if (filtered.length === 0) {
+tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><i class="fas fa-inbox"></i><div>No jobs found</div></td></tr>';
+return;
+}
+
+tbody.innerHTML = filtered.map(job => '<tr>' +
+'<td>#' + job.id + '</td>' +
+'<td>' + (job.location || '-') + '</td>' +
+'<td>' + (job.crop || '-') + '</td>' +
+'<td>' + (job.weight || 0) + ' kg</td>' +
+'<td>' + (job.destination || '-') + '</td>' +
+'<td>₱' + (job.fare ? job.fare.toFixed(2) : '0.00') + '</td>' +
+'<td><span class="status-badge ' + (job.status || '').toLowerCase() + '">' + (job.status || '-') + '</span></td>' +
+'<td>' + (job.driver_name || '-') + '</td>' +
+'<td>' +
+(job.status === 'Pending' ? '<button class="action-btn accept" onclick="acceptJob(' + job.id + ')">Accept</button>' : '') +
+'<button class="action-btn delete" onclick="deleteJob(' + job.id + ')">Delete</button>' +
+'</td></tr>'
+).join('');
+} catch(e) {
+tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><i class="fas fa-exclamation-triangle"></i><div>Error loading jobs</div></td></tr>';
+}
+}
+
+async function acceptJob(id) {
+const driver = prompt('Enter driver name:');
+if (!driver) return;
+try {
+await fetch('/api/jobs/' + id + '/accept', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({driver_name: driver}) });
+renderJobsList();
+} catch(e) { console.error(e); }
+}
+
+async function deleteJob(id) {
+if (!confirm('Delete this job?')) return;
+try {
+await fetch('/api/jobs/' + id, { method: 'DELETE' });
+renderJobsList();
+} catch(e) { console.error(e); }
+}
+
+async function renderUsersList() {
+const tbody = document.getElementById('usersTableBody');
+if (!tbody) return;
+try {
+const res = await fetch('/api/users');
+const users = await res.json();
+const search = (document.getElementById('userSearch')?.value || '').toLowerCase();
+const roleFilter = document.getElementById('userRoleFilter')?.value || 'all';
+
+const filtered = users.filter(u => {
+const matchSearch = !search || (u.name || '').toLowerCase().includes(search) || (u.email || '').toLowerCase().includes(search);
+const matchFilter = roleFilter === 'all' || u.role === roleFilter;
+return matchSearch && matchFilter;
+});
+
+if (filtered.length === 0) {
+tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><div>No users found</div></td></tr>';
+return;
+}
+
+tbody.innerHTML = filtered.map(user => '<tr>' +
+'<td>#' + user.id + '</td>' +
+'<td>' + (user.name || '-') + '</td>' +
+'<td>' + (user.email || '-') + '</td>' +
+'<td><span class="status-badge ' + (user.role || '') + '">' + (user.role || '-') + '</span></td>' +
+'<td>' + (user.phone || '-') + '</td>' +
+'<td><span class="status-badge ' + (user.status === 'active' ? 'active' : 'inactive') + '">' + (user.status || '-') + '</span></td>' +
+'<td>' + (user.joined_date || '-') + '</td>' +
+'<td>' +
+'<button class="action-btn toggle" onclick="toggleUser(' + user.id + ')">Toggle</button>' +
+'<button class="action-btn delete" onclick="deleteUser(' + user.id + ')">Delete</button>' +
+'</td></tr>'
+).join('');
+} catch(e) {
+tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-triangle"></i><div>Error loading users</div></td></tr>';
+}
+}
+
+async function toggleUser(id) {
+try {
+await fetch('/api/users/' + id + '/toggle', { method: 'PUT' });
+renderUsersList();
+} catch(e) { console.error(e); }
+}
+
+async function deleteUser(id) {
+if (!confirm('Delete this user?')) return;
+try {
+await fetch('/api/users/' + id, { method: 'DELETE' });
+renderUsersList();
+} catch(e) { console.error(e); }
+}
+
+window.onload = function() { loadAdminData(); };
+</script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KUHA - Smart transport coordination for farmers and local drivers.">
+    <title>KUHA | Farm-to-Route Platform</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- External Stylesheets -->
+    <link rel="stylesheet" href="/static/design/css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" onclick="showSection('home')" class="logo">
+                <i class="fas fa-leaf"></i> KUHA
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('home')">Home</a></li>
+                <li><a href="#problem" onclick="showSection('home')">The Problem</a></li>
+                <li><a href="#solution" onclick="showSection('home')">Solution</a></li>
+                <li><a href="/map" target="_blank">Map</a></li>
+            </ul>
+
+            <div class="nav-buttons">
+                <button onclick="showSection('login')" class="btn btn-outline">Login</button>
+                <button onclick="showSection('register')" class="btn btn-primary">Join Now</button>
+            </div>
+
+            <div class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- === MARKETING SECTIONS === -->
+    <div id="marketing-view">
+        <!-- HERO -->
+        <header id="home" class="hero">
+            <div class="hero-content">
+                <h1>Bridging the Gap Between<br><span style="color: var(--accent);">Farm & Market</span></h1>
+                <p>The smart logistics platform connecting small-holder farmers with local drivers to reduce waste and maximize profit.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="showSection('register')" class="btn btn-accent">Get Started Free</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ROLE SELECTION -->
+        <div class="container role-selection">
+            <div class="role-cards">
+                <div class="role-card" onclick="showSection('login')">
+                    <div class="role-icon"><i class="fas fa-user-astronaut"></i></div>
+                    <h3>I am a Farmer</h3>
+                    <p>Post a delivery request and track your goods.</p>
+                </div>
+                <div class="role-card" onclick="showSection('login')">
+                    <div class="role-icon"><i class="fas fa-truck"></i></div>
+                    <h3>I am a Driver</h3>
+                    <p>Find jobs nearby and increase your earnings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROBLEM SECTION -->
+        <section id="problem" class="section-padding fade-in-section">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-title">The Challenge</h2>
+                    <p class="section-subtitle">Why traditional logistics fails our farmers.</p>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="card">
+                        <i class="fas fa-triangle-exclamation card-icon"></i>
+                        <h3>Fragmented Supply</h3>
+                        <p>Small farmers cannot fill trucks individually, leading to high per-unit transport costs.</p>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-clock card-icon"></i>
+                        <h3>Post-Harvest Loss</h3>
+                        <p>Delays in finding transport result in over 30% of fresh produce spoiling before it hits the market.</p>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-users-slash card-icon"></i>
+                        <h3>Exploitative Middlemen</h3>
+                        <p>Without direct connections, farmers are forced to sell at rock-bottom prices to intermediaries.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SOLUTION SECTION -->
+        <section id="solution" class="section-padding" style="background-color: var(--bg-light);">
+            <div class="container">
+                <div class="grid-3" style="align-items: center;">
+                    <div style="grid-column: 1 / 2;" class="fade-in-section">
+                        <img src="https://images.unsplash.com/photo-1595246140625-573b715d11dc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Logistics App" style="width: 100%; border-radius: var(--radius); box-shadow: var(--shadow-md);">
+                    </div>
+                    <div style="grid-column: 2 / 4;" class="fade-in-section">
+                        <h2 class="section-title">The KUHA Solution</h2>
+                        <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            KUHA digitizes the supply chain by aggregating cargo from multiple farmers and matching it with available local drivers.
+                        </p>
+                        <ul style="list-style: none;">
+                            <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--primary);"></i> 
+                                <strong>Smart Route Optimization:</strong> Reduces fuel consumption by 25%.
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--primary);"></i> 
+                                <strong>Real-Time Tracking:</strong> Farmers know exactly where their goods are.
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--primary);"></i> 
+                                <strong>Instant Booking:</strong> Secure transport in minutes, not days.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OBJECTIVES / FEATURES -->
+        <section id="objectives" class="section-padding fade-in-section">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-title">Core Objectives</h2>
+                    <p class="section-subtitle">What we aim to achieve for the agricultural community.</p>
+                </div>
+                <div class="grid-3">
+                    <div class="card text-center">
+                        <div class="card-icon"><i class="fas fa-handshake"></i></div>
+                        <h3>Connect</h3>
+                        <p>Direct link between producers and transporters, cutting out unnecessary layers.</p>
+                    </div>
+                    <div class="card text-center">
+                        <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3>Preserve</h3>
+                        <p>Speed up the supply chain to ensure fresh produce reaches the market.</p>
+                    </div>
+                    <div class="card text-center">
+                        <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>Empower</h3>
+                        <p>Give farmers data and control over their logistics, increasing their profit margins.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- === APP & AUTH SECTIONS === -->
+
+    <!-- LOGIN SECTION -->
+    <section id="login" class="app-section">
+        <div class="app-container">
+            <div class="form-box">
+                <div class="text-center" style="margin-bottom: 2rem;">
+                    <h2 class="section-title" style="font-size: 2rem;">Welcome Back</h2>
+                    <p>Login to access your dashboard</p>
+                </div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Login to Dashboard</button>
+                </form>
+                <div class="auth-switch">
+                    Don't have an account? <a onclick="showSection('register')">Register here</a>
+                </div>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button onclick="showSection('home')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Back to Home</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- REGISTER SECTION -->
+    <section id="register" class="app-section">
+        <div class="app-container">
+            <div class="form-box">
+                <div class="text-center" style="margin-bottom: 2rem;">
+                    <h2 class="section-title" style="font-size: 2rem;">Join KUHA</h2>
+                    <p>Create your account today</p>
+                </div>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="registerName" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="registerEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="registerPassword" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="registerPhone" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="form-group">
+                        <label>I want to join as a...</label>
+                        <select id="registerRole" required>
+                            <option value="" disabled selected>Select your role</option>
+                            <option value="farmer">Farmer</option>
+                            <option value="driver">Driver</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Create Account</button>
+                </form>
+                <div class="auth-switch">
+                    Already have an account? <a onclick="showSection('login')">Login here</a>
+                </div>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button onclick="showSection('home')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Back to Home</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FARMER DASHBOARD -->
+    <section id="farmer" class="app-section">
+        <div class="app-container wide">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 class="section-title">Farmer Dashboard</h2>
+                <button onclick="showSection('home')" class="btn btn-outline" style="font-size: 0.8rem;">Logout</button>
+            </div>
+            
+            <div class="form-box">
+                <h3><i class="fas fa-box-open"></i> Request Transport</h3>
+                <form id="farmerForm" onsubmit="handlePostJob(event)">
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="location" placeholder="Farm Location" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Crop Type</label>
+                        <select id="crop">
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Root Crops">Root Crops</option>
+                            <option value="Grains">Grains</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Weight (kg)</label>
+                        <input type="number" id="weight" placeholder="e.g. 500" required onchange="calculateDeliveryFare()">
+                    </div>
+                    <div class="form-group">
+                        <label>Destination</label>
+                        <input type="text" id="destination" placeholder="Market Name" required onchange="calculateDeliveryFare()">
+                    </div>
+                    
+                    <!-- Fare Calculator -->
+                    <div id="fareCalculator" class="fare-calculator" style="display: none;">
+                        <div class="fare-header"><i class="fas fa-calculator"></i> Estimated Fare</div>
+                        <div class="fare-details" id="fareDetails"></div>
+                        <div class="fare-total" id="fareTotal"></div>
+                    </div>
+                    
+                    <button type="button" class="btn-calculate" onclick="calculateDeliveryFare()" id="calculateBtn">
+                        <i class="fas fa-calculator"></i> Calculate Fare
+                    </button>
+                    
+                    <button type="submit" class="btn-submit" id="postBtn" disabled>Post Request</button>
+                </form>
+            </div>
+            
+            <h3>My Requests</h3>
+            <div class="job-list" id="farmerList"></div>
+        </div>
+    </section>
+
+    <!-- DRIVER DASHBOARD -->
+    <section id="driver" class="app-section">
+        <div class="app-container wide">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 class="section-title"><i class="fas fa-truck"></i> Driver Dashboard</h2>
+                <button onclick="handleDriverLogout()" class="btn btn-outline" style="font-size: 0.8rem;">Logout</button>
+            </div>
+            
+            <!-- Driver Tabs -->
+            <div class="driver-tabs">
+                <button class="driver-tab active" onclick="showDriverTab('available')" id="driverTabAvailable">
+                    <i class="fas fa-list"></i> Available Jobs
+                </button>
+                <button class="driver-tab" onclick="showDriverTab('myjobs')" id="driverTabMyJobs">
+                    <i class="fas fa-briefcase"></i> My Jobs
+                </button>
+                <button class="driver-tab" onclick="showDriverTab('history')" id="driverTabHistory">
+                    <i class="fas fa-history"></i> History
+                </button>
+            </div>
+            
+            <!-- Available Jobs -->
+            <div id="driverAvailableSection">
+                <h3>Available Jobs Near You</h3>
+                <div class="loader" id="loader"></div>
+                <div class="job-list" id="driverAvailableList"></div>
+            </div>
+            
+            <!-- My Jobs -->
+            <div id="driverMyJobsSection" style="display: none;">
+                <h3>My Active Jobs</h3>
+                <div class="job-list" id="driverMyJobsList"></div>
+            </div>
+            
+            <!-- History -->
+            <div id="driverHistorySection" style="display: none;">
+                <h3>Completed Jobs</h3>
+                <div class="job-list" id="driverHistoryList"></div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4 style="color: var(--white); font-size: 1.5rem;"><i class="fas fa-leaf"></i> KUHA</h4>
+                    <p>Revolutionizing agricultural logistics through technology and community.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#" onclick="showSection('home')">Home</a></li>
+<li><a href="#problem" onclick="showSection('home')">About</a></li>
+                        <li><a href="#solution" onclick="showSection('home')">Solution</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> TatayDigs@kuha.com</li>
+                        <li><i class="fas fa-phone"></i> +63 961 441 8887</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Boarding House Ni Criz, Iloilo3 City</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 KUHA Logistics. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- JAVASCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
+    <script src="static/design/js/utils.js"></script>
+    <script src="static/design/js/app.js"></script>
+</body>
+</html>
