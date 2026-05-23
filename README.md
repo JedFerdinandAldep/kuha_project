@@ -359,7 +359,7 @@ If you encounter other issues, please open an issue on GitHub with:
 ## Contributors
 
 - **Jed Ferdinand Aldep** — Database & Backend
-- **Crizlhor Andreaz Fernando** — Frontend & Database
+- **Crizlhor Andreaz Fernando** — Frontend & Backend
 - **Romer Zion Alonday** — UI/UX Design & Frontend
 
 ---
